@@ -22,16 +22,23 @@ let a 1 add 3 mul 2 /// In java this would be int a = 1+3*2
 Assigning to new value
 
 ```
-ass a 1 add 2
+ass a 1 add 2 /// In java this would be a = 1 + 2, where a is already declared and initialized
 ```
 
 # Natural operations for types
 
--   add
--   sub
--   div
--   mul
--   mod
+-   add (addition)
+-   sub (subtraction)
+-   div (division)
+-   mul (multiplication)
+-   mod (modulo)
+-   eql (equals)
+-   grt (greater than)
+-   lst (less than)
+-   grt eql (>=)
+-   lst eql (<=)
+-   and (boolean and)
+-   orr (boolean or???)
 
 # Structured data type
 
@@ -45,12 +52,15 @@ ass a 1 add 2
 
 # Repetition statement
 
-Only one type of repitition in this language - `for`
+Only one type of repitition in this language - `for`. This would function as a while loop. To exit the loop, the user must use `brk`.
 
 ```
 let a 1;
 for
     a add 1;;;
+    iff a eql 3 thn
+        brk;;;
+    end
 end
 ```
 
@@ -86,13 +96,23 @@ out a
 
 # Examples
 
+## Fibonacci
+
 ```
-use pkg "some_module" /// This is importing a module
-use pkg "numpy"
+fun fibonacci n eql
+    iff n eql 0 thn
+        ret 0;;;
+    end
 
-let a = 1
- a eql b
-for
+    iff n eql 1 orr n eql 2 thn
+        ret 1;;;
+    end
 
+    ret fibonacci (n sub 1) add fibonacci (n sub 2)
 end
+
+
+let seventh_fib = fibonacci 7
+
+out "The seventh fibonacci number is: " add seventh_fib
 ```
