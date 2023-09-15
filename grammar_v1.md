@@ -31,6 +31,3 @@ Expression ::= **IntegerLiteral**
 | **Identifier** ExpressionList **%**
 
 ExpressionList ::= ExpressionList Expression | Expression
-
-let a fib run 2 fib run 4 5 end end
-fib 2
