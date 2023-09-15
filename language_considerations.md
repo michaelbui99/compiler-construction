@@ -56,7 +56,7 @@ Only one type of repitition in this language - `for`. This would function as a w
 
 ```
 let a 1;
-for
+for condition thn
     a add 1;;;
     iff a eql 3 thn
         brk;;;
@@ -67,7 +67,7 @@ end
 # Subroutines
 
 ```
-fun addNums a b eql
+fun addNums a b thn
     ret a add b;
 end
 
@@ -90,8 +90,8 @@ out "User guessed: " add a /// This prints the number to console
 ## Write to console
 
 ```
-let a "myString"
-out a
+let a "myString"%
+out a%
 ```
 
 # Examples
@@ -99,20 +99,20 @@ out a
 ## Fibonacci
 
 ```
-fun fibonacci n eql
+fun fibonacci n thn
     iff n eql 0 thn
-        ret 0;;;
+        ret 0%
     end
 
     iff n eql 1 orr n eql 2 thn
-        ret 1;;;
+        ret 1%
     end
 
-    ret fibonacci (n sub 1) add fibonacci (n sub 2)
+    ret fibonacci run n sub 1 end add fibonacci run n sub 2 end%
 end
 
 
-let seventh_fib = fibonacci 7
+let fib_8 fibonacci run fibbonacci 6 end %
 
-out "The seventh fibonacci number is: " add seventh_fib
+out "The eighth fibonacci number is: " add fib_8%
 ```
