@@ -12,4 +12,4 @@ const scanner2 = new Scanner("");
 console.log(scanner2.scan());
 
 const scanner3 = new Scanner("    ");
-console.log(scanner3.scan());
+console.log("SCAN ALL", scanner3.scanAll());

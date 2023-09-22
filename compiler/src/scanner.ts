@@ -13,6 +13,17 @@ export class Scanner {
         this.totalLength = sourceCode.length;
     }
 
+    public scanAll(): Token[] {
+        const tokens = [] as Token[];
+        let token = this.scan();
+        while (token.kind !== TokenKind.EOF) {
+            tokens.push(token);
+            token = this.scan();
+        }
+        tokens.push(token);
+        return tokens;
+    }
+
     public scan(): Token {
         this.skipGarbage();
         this.currentSpelling = "";
