@@ -16,7 +16,7 @@ Statement ::= Expression **%**
 | **ret** Expression **%**
 | Ø
 
-Declaration ::= get **Identifier** **%**
+Declaration ::= **get** **Identifier** **%**
 | **fun** **Identifier** IdList **thn** Statements **end**
 | **let** **Identifier** Expression **%**
 

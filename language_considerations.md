@@ -46,6 +46,7 @@ ass a 1 add 2 /// In java this would be a = 1 + 2, where a is already declared a
 -   str (a string)
 -   obj (an object, maybe)
 
+let a arr 4 5 18 68
 # Selection statement
 
 -   iff (if and only if)
