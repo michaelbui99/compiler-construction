@@ -47,6 +47,8 @@ export class Scanner {
             if (this.currentSpelling.length === 3) {
                 const tokenKind = Token.keywordOf(this.currentSpelling);
                 return tokenKind ? tokenKind : TokenKind.ERROR;
+            } else {
+                return TokenKind.IDENTIFIER;
             }
         }
 
