@@ -47,6 +47,7 @@ ass a 1 add 2 /// In java this would be a = 1 + 2, where a is already declared a
 -   obj (an object, maybe)
 
 let a arr 4 5 18 68
+
 # Selection statement
 
 -   iff (if and only if)
@@ -56,11 +57,12 @@ let a arr 4 5 18 68
 Only one type of repitition in this language - `for`. This would function as a while loop. To exit the loop, the user must use `brk`.
 
 ```
-let a 1;
+let a 1%
+let condition tru
 for condition thn
-    a add 1;;;
+    a add 1%
     iff a eql 3 thn
-        brk;;;
+        ass condition not tru %
     end
 end
 ```
@@ -69,11 +71,11 @@ end
 
 ```
 fun addNums a b thn
-    ret a add b;
+    ret a add b%
 end
 
-let firstNum 1
-let secondNum 2
+let firstNum 1%
+let secondNum 2%
 
 let result addNums firstNum secondNum
 ```
@@ -83,9 +85,9 @@ let result addNums firstNum secondNum
 ## Read from input
 
 ```
-out "Enter guess" // Wr
-get a /// User enters a number
-out "User guessed: " add a /// This prints the number to console
+out "Enter guess"% // Wr
+get a%/// User enters a number
+out "User guessed: " add a% /// This prints the number to console
 ```
 
 ## Write to console
