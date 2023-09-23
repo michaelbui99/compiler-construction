@@ -40,12 +40,14 @@ export class Scanner {
             }
             return TokenKind.INTEGER_LITTERAL;
         } else if (this.isLetter(this.currentChar)) {
-            this.consumeCurrentChar();
             while (this.isLetter(this.currentChar)) {
                 this.consumeCurrentChar();
             }
             if (this.currentSpelling.length === 3) {
-                const tokenKind = Token.keywordOf(this.currentSpelling);
+                let tokenKind = Token.keywordOf(this.currentSpelling);
+                if (!tokenKind) {
+                    tokenKind = Token.operatorOf(this.currentSpelling);
+                }
                 return tokenKind ? tokenKind : TokenKind.ERROR;
             } else {
                 return TokenKind.IDENTIFIER;
@@ -61,6 +63,7 @@ export class Scanner {
             return TokenKind.EOF;
         }
 
+        this.consumeCurrentChar();
         return TokenKind.ERROR;
     }
 

@@ -11,4 +11,5 @@ console.log(scanner.scan());
 const scanner2 = new Scanner("");
 console.log(scanner2.scan());
 
-const scanner3 = new Scanner("    ");
+const scanner3 = new Scanner("let a 1 add 2%");
+console.log(scanner3.scanAll());
