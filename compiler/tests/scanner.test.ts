@@ -54,4 +54,44 @@ describe("Scan tokens", () => {
             { kind: TokenKind.EOF, spelling: "" },
         ] as Token[]);
     });
+
+    test("Correct tokens are scanned from source 3", () => {
+        let source = 'out "hello world"%';
+        let scanner = new Scanner(source);
+
+        let tokens = scanner.scanAll();
+
+        expect(tokens).toEqual([
+            { kind: TokenKind.OUT, spelling: "out" },
+            { kind: TokenKind.STRING_LITTERAL, spelling: "hello world" },
+            { kind: TokenKind.PERCENT, spelling: "%" },
+            { kind: TokenKind.EOF, spelling: "" },
+        ] as Token[]);
+    });
+
+    test("Unterminated string is scanned as error", () => {
+        let source = 'out "hello world%';
+        let scanner = new Scanner(source);
+
+        let tokens = scanner.scanAll();
+
+        expect(tokens).toEqual([
+            { kind: TokenKind.OUT, spelling: "out" },
+            { kind: TokenKind.ERROR, spelling: "hello world%" },
+            { kind: TokenKind.EOF, spelling: "" },
+        ] as Token[]);
+    });
+
+    test("User defined identifier with length of 3 is scanned as error", () => {
+        let source = "let myV";
+        let scanner = new Scanner(source);
+
+        let tokens = scanner.scanAll();
+
+        expect(tokens).toEqual([
+            { kind: TokenKind.LET, spelling: "let" },
+            { kind: TokenKind.ERROR, spelling: "myV" },
+            { kind: TokenKind.EOF, spelling: "" },
+        ] as Token[]);
+    });
 });
