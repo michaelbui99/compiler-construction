@@ -40,16 +40,39 @@ export class Scanner {
             }
             return TokenKind.INTEGER_LITTERAL;
         } else if (this.isLetter(this.currentChar)) {
-            this.consumeCurrentChar();
             while (this.isLetter(this.currentChar)) {
                 this.consumeCurrentChar();
             }
+            // User defined identifiers cannot have length of 3,
+            // thus it must be a keywords or operator.
+            // User defined identifiers with length of 3 are treated as errors.
             if (this.currentSpelling.length === 3) {
-                const tokenKind = Token.keywordOf(this.currentSpelling);
+                let tokenKind = Token.keywordOf(this.currentSpelling);
+                if (!tokenKind) {
+                    tokenKind = Token.operatorOf(this.currentSpelling);
+                }
                 return tokenKind ? tokenKind : TokenKind.ERROR;
             } else {
                 return TokenKind.IDENTIFIER;
             }
+        }
+
+        if (this.currentChar == '"') {
+            // Don't include the " in the spelling
+            this.currentChar = this.getNextChar();
+            while (this.currentChar !== '"' && !this.isAtEnd()) {
+                this.consumeCurrentChar();
+            }
+
+            if (this.isAtEnd()) {
+                // Only reached on unterminated string litteral
+                // e.g. let myVar "test
+                return TokenKind.ERROR;
+            }
+
+            // Don't include the " in the spelling
+            this.currentChar = this.getNextChar();
+            return TokenKind.STRING_LITTERAL;
         }
 
         if (this.currentChar === "%") {
@@ -57,10 +80,11 @@ export class Scanner {
             return TokenKind.PERCENT;
         }
 
-        if (this.currentReadIdx >= this.totalLength) {
+        if (this.isAtEnd()) {
             return TokenKind.EOF;
         }
 
+        this.consumeCurrentChar();
         return TokenKind.ERROR;
     }
 
@@ -82,11 +106,12 @@ export class Scanner {
         return /[0-9]/.test(digit);
     }
 
+    private isAtEnd(): boolean {
+        return this.currentReadIdx >= this.sourceCode.length;
+    }
+
     private skipGarbage(): void {
-        while (
-            /\s/.test(this.currentChar) &&
-            this.currentReadIdx < this.totalLength
-        ) {
+        while (/\s/.test(this.currentChar) && !this.isAtEnd()) {
             this.currentChar = this.getNextChar();
         }
     }

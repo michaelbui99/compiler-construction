@@ -40,6 +40,20 @@ const keywordKindMappings = new Map<string, TokenKind>([
     ["fun", TokenKind.FUNCTION],
 ]);
 
+const operators = new Map<string, TokenKind>([
+    ["add", TokenKind.OPERATOR],
+    ["sub", TokenKind.OPERATOR],
+    ["div", TokenKind.OPERATOR],
+    ["mul", TokenKind.OPERATOR],
+    ["mod", TokenKind.OPERATOR],
+    ["eql", TokenKind.OPERATOR],
+    ["grt", TokenKind.OPERATOR],
+    ["lst", TokenKind.OPERATOR],
+    ["and", TokenKind.OPERATOR],
+    ["orr", TokenKind.OPERATOR],
+    ["not", TokenKind.OPERATOR],
+]);
+
 export class Token {
     kind: TokenKind;
     spelling: string;
@@ -51,5 +65,9 @@ export class Token {
 
     static keywordOf(spelling: string): TokenKind | undefined {
         return keywordKindMappings.get(spelling);
+    }
+
+    static operatorOf(spelling: string): TokenKind | undefined {
+        return operators.get(spelling);
     }
 }
