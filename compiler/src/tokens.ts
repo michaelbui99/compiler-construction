@@ -3,6 +3,7 @@ export enum TokenKind {
     OPERATOR = "OPERATOR",
     STRING_LITTERAL = "STRING_LITTERAL",
     INTEGER_LITTERAL = "INTEGER_LITTERAL",
+    BOOLEAN_LITTERAL = "TRU",
 
     // Keywords
     LET = "LET",
@@ -14,6 +15,7 @@ export enum TokenKind {
     RUN = "RUN",
     END = "END",
     FOR = "FOR",
+    BREAK = "BRK",
     GET = "GET",
     OUT = "OUT",
     RETURN = "RETURN",
@@ -38,6 +40,8 @@ const keywordKindMappings = new Map<string, TokenKind>([
     ["out", TokenKind.OUT],
     ["ret", TokenKind.RETURN],
     ["fun", TokenKind.FUNCTION],
+    ["brk", TokenKind.BREAK],
+    ["tru", TokenKind.BOOLEAN_LITTERAL]
 ]);
 
 const operators = new Map<string, TokenKind>([
