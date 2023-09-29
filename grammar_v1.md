@@ -4,7 +4,7 @@ Program ::= Block
 
 Block ::= Statements
 
-Statements ::= (Statement)+
+Statements ::= (Statement)\*
 
 Statement ::= ExpressionResult **%**
 | Declaration
@@ -14,7 +14,6 @@ Statement ::= ExpressionResult **%**
 | **ass** **Identifier** ExpressionResult **%**
 | **ret** ExpressionResult **%**
 | **brk**
-| Ø
 
 Declaration ::= **get** **Identifier** **%**
 | **fun** **Identifier** (**Identifier**)\* **thn** Statements **end**
@@ -22,10 +21,10 @@ Declaration ::= **get** **Identifier** **%**
 
 Expression ::= **IntegerLiteral**
 | **StringLiteral**
-| **not** Expression
-| **run** (Expression) **end**
+| **BooleanLiteral**
+| **operator** ExpressionResult
+| **run** (ExpressionResult) **end**
 | **Identifier** (Ø | ExpressionList **%** )
-| **tru**
 
 ExpressionResult ::= Expression (**operator** Expression)\*
 
