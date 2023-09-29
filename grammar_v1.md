@@ -2,32 +2,31 @@
 
 Program ::= Block
 
-Block ::= Statements | Ø
+Block ::= Statements
 
-Statements ::= Statement | Statements Statement
+Statements ::= (Statement)+
 
-Statement ::= Expression **%**
+Statement ::= ExpressionResult **%**
 | Declaration
-| **iff** Expression **thn** Statements **end**
-| **iff** Expression **thn** Statements **els** Statements **end**
-| **for** Expressions **thn** Statements **end**
-| **out** Expression **%**
-| **ass** Expression **%**
-| **ret** Expression **%**
+| **iff** ExpressionResult **thn** Statements (Ø | **els** Statements )**end**
+| **for** ExpressionResult **thn** Statements **end**
+| **out** ExpressionResult **%**
+| **ass** **Identifier** ExpressionResult **%**
+| **ret** ExpressionResult **%**
+| **brk**
 | Ø
 
 Declaration ::= **get** **Identifier** **%**
-| **fun** **Identifier** IdList **thn** Statements **end**
-| **let** **Identifier** Expression **%**
-
-IdList ::= **Identifier** IdList | Ø
+| **fun** **Identifier** (**Identifier**)\* **thn** Statements **end**
+| **let** **Identifier** ExpressionResult **%**
 
 Expression ::= **IntegerLiteral**
 | **StringLiteral**
-| Expression **operator** Expression
 | **not** Expression
-| **run** Expression **end**
-| **Identifier**
-| **Identifier** ExpressionList **%**
+| **run** (Expression) **end**
+| **Identifier** (Ø | ExpressionList **%** )
+| **tru**
 
-ExpressionList ::= ExpressionList Expression | Expression
+ExpressionResult ::= Expression (**operator** Expression)\*
+
+ExpressionList ::= (Expression)+
