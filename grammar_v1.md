@@ -16,16 +16,51 @@ Statement ::= ExpressionResult **%**
 | **brk**
 
 Declaration ::= **get** **Identifier** **%**
-| **fun** **Identifier** (**Identifier**)\* **thn** Statements **end**
-| **let** **Identifier** ExpressionResult **%**
+| **fun** **Identifier** (**Identifier**) **thn** Statements **end**
+| **let** **Identifier** (**arr** ExpressionList | ExpressionResult) **%**
 
 Expression ::= **IntegerLiteral**
 | **StringLiteral**
 | **BooleanLiteral**
 | **operator** ExpressionResult
 | **run** (ExpressionResult) **end**
-| **Identifier** (Ø | ExpressionList **%** )
+| **Identifier** (Ø | ExpressionList )
 
-ExpressionResult ::= Expression (**operator** Expression)\*
+ExpressionResult ::= Expression6 (**BooleanOperator** Expression6 )\*
 
-ExpressionList ::= (Expression)+
+ExpressionList ::= (Expression6 )+
+
+BooleanOperator ::= **and** | **or**
+
+CompareOperator ::= **grt** | **lst**
+
+AddOperator ::= **add** | **sub**
+
+MultOperator ::= **mul** | **div** | **mod**
+
+PrimaryExpression ::= **run** ExpressionResult **end**
+| **IntegerLiteral**
+| **BooleanLiteral**
+| **StringLiteral**
+| **Identifier**
+
+Expression6 ::= Expression5 | Expression5 **eql** Expression5
+Expression5 ::= Expression4 | Expression4 CompareOperator Expression4
+Expression4 ::= Expression3 | Expression3 AddOperator Expression3
+Expression3 ::= Expression2 | Expression2 MultOperator Expression2
+Expression2 ::= PrimaryExpression | **not** PrimaryExpression
+
+Index ::= (#**InterLitteral**)+
+
+```
+NOTE: Indexing arrays:
+
+let myArr arr 1 2 3 4
+let x myArr #0 --- x is now 1
+ass myArr #0 2
+out myArr #0 --- prints 2
+
+
+6 * 5
+
+```

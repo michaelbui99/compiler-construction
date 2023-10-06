@@ -41,7 +41,7 @@ const keywordKindMappings = new Map<string, TokenKind>([
     ["ret", TokenKind.RETURN],
     ["fun", TokenKind.FUNCTION],
     ["brk", TokenKind.BREAK],
-    ["tru", TokenKind.BOOLEAN_LITTERAL]
+    ["tru", TokenKind.BOOLEAN_LITTERAL],
 ]);
 
 const operators = new Map<string, TokenKind>([
