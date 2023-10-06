@@ -119,3 +119,6 @@ let fib_8 fibonacci run fibbonacci 6 end %
 
 out "The eighth fibonacci number is: " add fib_8%
 ```
+
+during class we have talked about having single line and multi line comments
+a suggestion that I remember was to use /// multiline comment \\\ and --- single line comment
