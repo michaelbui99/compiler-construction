@@ -19,7 +19,7 @@ export class IffStatement extends Statement {
     constructor(
         public expression: ExpressionResult,
         public thnPart: Statements,
-        public elsPart: Statements
+        public elsPart: Statements | undefined
     ) {
         super();
     }
@@ -73,4 +73,15 @@ export class RetStatement extends Statement {
     accept(visitor: IVisitor, arg: any): void {
         throw new Error("Method not implemented.");
     }
+}
+
+export class BreakStatement extends Statement{
+    constructor(){
+        super();
+    }
+
+    accept(visitor: IVisitor, arg: any): void {
+        throw new Error("Method not implemented.");
+    }
+    
 }

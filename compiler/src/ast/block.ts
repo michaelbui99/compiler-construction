@@ -1,8 +1,9 @@
 import { AST } from "./ast";
+import { Statements } from "./statements";
 import { IVisitor } from "./visitor";
 
 export class Block extends AST {
-    constructor() {
+    constructor(public statements: Statements) {
         super();
     }
 
