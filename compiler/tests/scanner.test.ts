@@ -1,6 +1,6 @@
 import { describe, expect, test } from "@jest/globals";
-import { Scanner } from "../src/scanner";
-import { Token, TokenKind } from "../src/tokens";
+import { Scanner } from "../src/scanner/scanner";
+import { Token, TokenKind } from "../src/scanner/tokens";
 
 describe("Scan tokens", () => {
     test("Whitespace and empty source is scanned correctly", () => {
@@ -91,6 +91,38 @@ describe("Scan tokens", () => {
         expect(tokens).toEqual([
             { kind: TokenKind.LET, spelling: "let" },
             { kind: TokenKind.ERROR, spelling: "myV" },
+            { kind: TokenKind.EOF, spelling: "" },
+        ] as Token[]);
+    });
+
+    test("Index is scanned correctly", () => {
+        let source = "let x myArr #1#2%";
+        let scanner = new Scanner(source);
+
+        let tokens = scanner.scanAll();
+
+        expect(tokens).toEqual([
+            { kind: TokenKind.LET, spelling: "let" },
+            { kind: TokenKind.IDENTIFIER, spelling: "x" },
+            { kind: TokenKind.IDENTIFIER, spelling: "myArr" },
+            { kind: TokenKind.INDEX, spelling: "#1#2" },
+            { kind: TokenKind.PERCENT, spelling: "%" },
+            { kind: TokenKind.EOF, spelling: "" },
+        ] as Token[]);
+    });
+
+    test("Index is scanned correctly", () => {
+        let source = "let x myArr #1#myIdentifier%";
+        let scanner = new Scanner(source);
+
+        let tokens = scanner.scanAll();
+
+        expect(tokens).toEqual([
+            { kind: TokenKind.LET, spelling: "let" },
+            { kind: TokenKind.IDENTIFIER, spelling: "x" },
+            { kind: TokenKind.IDENTIFIER, spelling: "myArr" },
+            { kind: TokenKind.INDEX, spelling: "#1#myIdentifier" },
+            { kind: TokenKind.PERCENT, spelling: "%" },
             { kind: TokenKind.EOF, spelling: "" },
         ] as Token[]);
     });

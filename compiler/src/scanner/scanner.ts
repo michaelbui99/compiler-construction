@@ -27,10 +27,7 @@ export class Scanner {
     public scan(): Token {
         this.skipGarbage();
         this.currentSpelling = "";
-        return {
-            kind: this.scanToken(),
-            spelling: this.currentSpelling,
-        };
+        return new Token(this.scanToken(), this.currentSpelling);
     }
 
     private scanToken(): TokenKind {
@@ -57,7 +54,7 @@ export class Scanner {
             }
         }
 
-        if (this.currentChar == '"') {
+        if (this.currentChar === '"') {
             // Don't include the " in the spelling
             this.currentChar = this.getNextChar();
             while (this.currentChar !== '"' && !this.isAtEnd()) {
@@ -73,6 +70,19 @@ export class Scanner {
             // Don't include the " in the spelling
             this.currentChar = this.getNextChar();
             return TokenKind.STRING_LITTERAL;
+        }
+
+        if (this.currentChar === "#") {
+            while (
+                (this.currentChar === "#" ||
+                    this.isLetter(this.currentChar) ||
+                    this.isDigit(this.currentChar)) &&
+                !this.isAtEnd()
+            ) {
+                this.consumeCurrentChar();
+            }
+
+            return TokenKind.INDEX;
         }
 
         if (this.currentChar === "%") {

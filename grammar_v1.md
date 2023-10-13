@@ -19,13 +19,6 @@ Declaration ::= **get** **Identifier** **%**
 | **fun** **Identifier** (**Identifier**) **thn** Statements **end**
 | **let** **Identifier** (**arr** ExpressionList | ExpressionResult) **%**
 
-Expression ::= **IntegerLiteral**
-| **StringLiteral**
-| **BooleanLiteral**
-| **operator** ExpressionResult
-| **run** (ExpressionResult) **end**
-| **Identifier** (Ø | ExpressionList )
-
 ExpressionResult ::= Expression6 (**BooleanOperator** Expression6 )\*
 
 ExpressionList ::= (Expression6 )+
@@ -42,15 +35,19 @@ PrimaryExpression ::= **run** ExpressionResult **end**
 | **IntegerLiteral**
 | **BooleanLiteral**
 | **StringLiteral**
-| **Identifier**
+| **Identifier** (Ø | ExpressionList)
 
 Expression6 ::= Expression5 | Expression5 **eql** Expression5
+
 Expression5 ::= Expression4 | Expression4 CompareOperator Expression4
+
 Expression4 ::= Expression3 | Expression3 AddOperator Expression3
+
 Expression3 ::= Expression2 | Expression2 MultOperator Expression2
+
 Expression2 ::= PrimaryExpression | **not** PrimaryExpression
 
-Index ::= (#**InterLitteral**)+
+Index ::= (#(**InterLitteral**)|(**Identifier**))+
 
 ```
 NOTE: Indexing arrays:

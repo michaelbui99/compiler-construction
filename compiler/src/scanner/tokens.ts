@@ -18,6 +18,8 @@ export enum TokenKind {
     BREAK = "BRK",
     GET = "GET",
     OUT = "OUT",
+    ARR = "ARR",
+    INDEX = "INDEX",
     RETURN = "RETURN",
     FUNCTION = "FUNCTION",
 
@@ -42,6 +44,7 @@ const keywordKindMappings = new Map<string, TokenKind>([
     ["fun", TokenKind.FUNCTION],
     ["brk", TokenKind.BREAK],
     ["tru", TokenKind.BOOLEAN_LITTERAL],
+    ["arr", TokenKind.ARR],
 ]);
 
 const operators = new Map<string, TokenKind>([
@@ -73,5 +76,38 @@ export class Token {
 
     static operatorOf(spelling: string): TokenKind | undefined {
         return operators.get(spelling);
+    }
+
+    public isBooleanOperator(): boolean {
+        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
+            "and",
+            "or",
+        ]);
+    }
+
+    public isCompareOperator(): boolean {
+        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
+            "grt",
+            "lst",
+        ]);
+    }
+
+    public isAddOperator(): boolean {
+        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
+            "add",
+            "sub",
+        ]);
+    }
+
+    public isMultOperator(): boolean {
+        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
+            "mul",
+            "div",
+            "mod",
+        ]);
+    }
+
+    private isKindAndHasEitherSpelling(kind: TokenKind, spellings: string[]) {
+        return this.kind === kind && spellings.includes(this.spelling);
     }
 }
