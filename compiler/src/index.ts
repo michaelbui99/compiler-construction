@@ -1,4 +1,4 @@
-import { Parser } from "./ast/Parser.1";
+import { Parser } from "./ast/parser";
 import { Scanner } from "./scanner/scanner";
 
 const scanner = new Scanner('let myVar "test"');

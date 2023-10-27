@@ -1,6 +1,7 @@
 import { AST } from "./ast";
 import { ExpressionResult } from "./expression";
 import { Identifier } from "./identifier";
+import { IntegerLiteral } from "./literals";
 import { IVisitor } from "./visitor";
 
 export abstract class Statement extends AST {}
@@ -19,7 +20,7 @@ export class IffStatement extends Statement {
     constructor(
         public expression: ExpressionResult,
         public thnPart: Statements,
-        public elsPart: Statements
+        public elsPart: Statements | undefined
     ) {
         super();
     }
@@ -52,10 +53,13 @@ export class OutStatement extends Statement {
     }
 }
 
+export type IndexType = Identifier|IntegerLiteral;
+
 export class AssStatement extends Statement {
     constructor(
         public identifier: Identifier,
-        public expression: ExpressionResult
+        public expression: ExpressionResult,
+        public index: IndexType[]|undefined = undefined
     ) {
         super();
     }
@@ -73,4 +77,15 @@ export class RetStatement extends Statement {
     accept(visitor: IVisitor, arg: any): void {
         throw new Error("Method not implemented.");
     }
+}
+
+export class BreakStatement extends Statement{
+    constructor(){
+        super();
+    }
+
+    accept(visitor: IVisitor, arg: any): void {
+        throw new Error("Method not implemented.");
+    }
+    
 }

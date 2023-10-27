@@ -1,5 +1,6 @@
 import { Scanner } from "../scanner/scanner";
 import { Token, TokenKind } from "../scanner/tokens";
+import { Block } from "./block";
 import {
     Declaration,
     FunctionDeclaration,
@@ -16,11 +17,13 @@ import {
     StringLiteralExpression,
     UnaryExpression,
     VariableExpression,
+    ArrayExperession,
 } from "./expression";
 import { Identifier } from "./identifier";
 import { BooleanLiteral, IntegerLiteral, StringLiteral } from "./literals";
 import { Operator } from "./operator";
-import { IffStatement, Statement, Statements } from "./statements";
+import { Program } from "./program";
+import { AssStatement, BreakStatement, ForStatement, IffStatement, IndexType, OutStatement, RetStatement, Statement, Statements } from "./statements";
 
 export class Parser {
     private scanner: Scanner;
@@ -31,16 +34,18 @@ export class Parser {
         this.currentTerminal = this.scanner.scan();
     }
 
-    public parseProgram(): void {
-        this.parseBlock();
+    public parseProgram(): Program {
+        const block = this.parseBlock();
 
         if (this.currentTerminal.kind != TokenKind.EOF) {
             this.reportError("incorrectly terminated program");
         }
+        return new Program(block);
     }
 
-    private parseBlock(): void {
-        this.parseStatements();
+    private parseBlock(): Block {
+        const statements = this.parseStatements();
+        return new Block(statements);
     }
 
     private parseStatements(): Statements {
@@ -70,55 +75,64 @@ export class Parser {
             case TokenKind.GET:
             case TokenKind.FUNCTION:
             case TokenKind.LET:
-                this.parseDeclaration();
-                break;
+                return this.parseDeclaration();
             case TokenKind.INTEGER_LITTERAL:
             case TokenKind.STRING_LITTERAL:
             case TokenKind.BOOLEAN_LITTERAL:
             case TokenKind.OPERATOR:
             case TokenKind.RUN:
             case TokenKind.IDENTIFIER:
-                this.parseExpressionResult();
-                break;
+                return this.parseExpressionResult();
             case TokenKind.IFF:
                 this.accept(TokenKind.IFF);
-                this.parseExpressionResult();
+                const ifExpResult = this.parseExpressionResult();
                 this.accept(TokenKind.THEN);
-                this.parseStatements();
+                const ifStatements = this.parseStatements();
+                let elseStatements = undefined;
                 // @ts-ignore
                 if (this.currentTerminal.kind === TokenKind.ELSE) {
-                    this.parseStatements();
+                    elseStatements = this.parseStatements();
                 }
                 this.accept(TokenKind.END);
-                break;
+                return new IffStatement(ifExpResult,ifStatements,elseStatements);
             case TokenKind.FOR:
                 this.accept(TokenKind.FOR);
-                this.parseExpressionResult();
+                const exppressionResult = this.parseExpressionResult();
                 this.accept(TokenKind.THEN);
-                this.parseStatements();
+                const statements = this.parseStatements();
                 this.accept(TokenKind.END);
-                break;
+                return new ForStatement(exppressionResult,statements);
             case TokenKind.OUT:
                 this.accept(TokenKind.OUT);
-                this.parseExpressionResult();
+                const expResult = this.parseExpressionResult();
                 this.accept(TokenKind.PERCENT);
-                break;
+                return new OutStatement(expResult);
             case TokenKind.ASSIGN:
                 this.accept(TokenKind.ASSIGN);
-                this.accept(TokenKind.IDENTIFIER);
-                this.parseExpressionResult();
+                const assIdentifierToken = this.accept(TokenKind.IDENTIFIER);
+                const assIdentifier = new Identifier(assIdentifierToken.spelling);
+                let indexes = [] as IndexType[];
+                // @ts-ignore
+                if (this.currentTerminal.kind === TokenKind.INDEX){
+                    indexes = this.parseIndex();
+                }
+                const assExpression = this.parseExpressionResult();
                 this.accept(TokenKind.PERCENT);
-                break;
+                return new AssStatement(assIdentifier, assExpression, indexes);
             case TokenKind.RETURN:
                 this.accept(TokenKind.RETURN);
-                this.parseExpressionResult();
+                const retExpression = this.parseExpressionResult();
                 this.accept(TokenKind.PERCENT);
-                break;
+                return new RetStatement(retExpression);
             case TokenKind.BREAK:
                 this.accept(TokenKind.BREAK);
-                break;
+                return new BreakStatement();
+            default:
+                this.reportError(
+                    `Failed to parse statement from kind ${this.currentTerminal.kind}`
+                    );
+                throw new Error("Unreachable");
         }
-        throw "";
     }
 
     private parseDeclaration(): Declaration {
@@ -158,8 +172,12 @@ export class Parser {
                 const identifier = new Identifier(identifierToken.spelling);
                 if (this.isExpressionToken()) {
                     const expressionList = this.parseExpressionList();
-                    this.accept(TokenKind.PERCENT);
+                    this.accept(TokenKind.PERCENT); // TODO: do we need this???
                     return new CallExpression(identifier, expressionList);
+                    // @ts-ignore
+                } else if (this.currentTerminal.kind === TokenKind.INDEX){
+                    const indexList = this.parseIndex();
+                    return new ArrayExperession(identifier,indexList);
                 }
                 return new VariableExpression(identifier);
         }
@@ -196,7 +214,7 @@ export class Parser {
         return new ExpressionList(expressions);
     }
 
-    private parseExpressionResult() {
+    private parseExpressionResult() : ExpressionResult {
         let res: ExpressionResult = this.parseExpression6();
 
         while (this.currentTerminal.isBooleanOperator()) {
@@ -207,6 +225,24 @@ export class Parser {
         }
 
         return res;
+    }
+
+    private parseIndex(): IndexType[]{
+        this.accept(TokenKind.INDEX);
+        let token = [] as IndexType[];
+        token.push(this.parseIndexType());
+        while (this.currentTerminal.kind === TokenKind.INDEX){
+            token.push(this.parseIndexType());
+        }
+        return token;
+    }
+
+    private parseIndexType():IndexType{
+        if (this.currentTerminal.kind === TokenKind.INTEGER_LITTERAL){
+            return new IntegerLiteral(this.accept(TokenKind.INTEGER_LITTERAL).spelling);
+        } else {
+            return new Identifier(this.accept(TokenKind.IDENTIFIER).spelling);
+        }
     }
 
     private parseExpression6(): ExpressionResult {
@@ -299,6 +335,7 @@ export class Parser {
         if (this.currentTerminal.kind === TokenKind.ARR) {
             this.accept(TokenKind.ARR);
             const expressionList = this.parseExpressionList();
+            this.accept(TokenKind.PERCENT);
             return new VariableDeclaration(
                 new Identifier(identifierToken.spelling),
                 undefined,

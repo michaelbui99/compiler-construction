@@ -11,7 +11,7 @@ Statement ::= ExpressionResult **%**
 | **iff** ExpressionResult **thn** Statements (Ø | **els** Statements )**end**
 | **for** ExpressionResult **thn** Statements **end**
 | **out** ExpressionResult **%**
-| **ass** **Identifier** ExpressionResult **%**
+| **ass** **Identifier** (Ø | Index) ExpressionResult **%**
 | **ret** ExpressionResult **%**
 | **brk**
 
@@ -35,7 +35,7 @@ PrimaryExpression ::= **run** ExpressionResult **end**
 | **IntegerLiteral**
 | **BooleanLiteral**
 | **StringLiteral**
-| **Identifier** (Ø | ExpressionList)
+| **Identifier** (Ø | ExpressionList | Index)
 
 Expression6 ::= Expression5 | Expression5 **eql** Expression5
 
