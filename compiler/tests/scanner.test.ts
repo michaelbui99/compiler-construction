@@ -96,7 +96,7 @@ describe("Scan tokens", () => {
     });
 
     test("Index is scanned correctly", () => {
-        let source = "let x myArr #1#2%";
+        let source = "let x myArr # 1 # 2 %";
         let scanner = new Scanner(source);
 
         let tokens = scanner.scanAll();
@@ -105,14 +105,17 @@ describe("Scan tokens", () => {
             { kind: TokenKind.LET, spelling: "let" },
             { kind: TokenKind.IDENTIFIER, spelling: "x" },
             { kind: TokenKind.IDENTIFIER, spelling: "myArr" },
-            { kind: TokenKind.INDEX, spelling: "#1#2" },
+            { kind: TokenKind.INDEX, spelling: "#" },
+            { kind: TokenKind.INTEGER_LITTERAL, spelling: "1" },
+            { kind: TokenKind.INDEX, spelling: "#" },
+            { kind: TokenKind.INTEGER_LITTERAL, spelling: "2" },
             { kind: TokenKind.PERCENT, spelling: "%" },
             { kind: TokenKind.EOF, spelling: "" },
         ] as Token[]);
     });
 
     test("Index is scanned correctly", () => {
-        let source = "let x myArr #1#myIdentifier%";
+        let source = "let x myArr # 1 # myIdentifier %";
         let scanner = new Scanner(source);
 
         let tokens = scanner.scanAll();
@@ -121,7 +124,10 @@ describe("Scan tokens", () => {
             { kind: TokenKind.LET, spelling: "let" },
             { kind: TokenKind.IDENTIFIER, spelling: "x" },
             { kind: TokenKind.IDENTIFIER, spelling: "myArr" },
-            { kind: TokenKind.INDEX, spelling: "#1#myIdentifier" },
+            { kind: TokenKind.INDEX, spelling: "#" },
+            { kind: TokenKind.INTEGER_LITTERAL, spelling: "1" },
+            { kind: TokenKind.INDEX, spelling: "#" },
+            { kind: TokenKind.IDENTIFIER, spelling: "myIdentifier" },
             { kind: TokenKind.PERCENT, spelling: "%" },
             { kind: TokenKind.EOF, spelling: "" },
         ] as Token[]);

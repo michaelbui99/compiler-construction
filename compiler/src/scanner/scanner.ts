@@ -73,15 +73,15 @@ export class Scanner {
         }
 
         if (this.currentChar === "#") {
-            while (
-                (this.currentChar === "#" ||
-                    this.isLetter(this.currentChar) ||
-                    this.isDigit(this.currentChar)) &&
-                !this.isAtEnd()
-            ) {
-                this.consumeCurrentChar();
-            }
-
+            // this.currentChar = this.getNextChar();
+            // while (
+            //     (this.isLetter(this.currentChar) ||
+            //     this.isDigit(this.currentChar)) &&
+            //     !this.isAtEnd()
+            // ) {
+            //     
+            // }
+            this.consumeCurrentChar();
             return TokenKind.INDEX;
         }
 

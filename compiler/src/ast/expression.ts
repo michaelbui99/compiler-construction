@@ -2,6 +2,7 @@ import { AST } from "./ast";
 import { Identifier } from "./identifier";
 import { BooleanLiteral, IntegerLiteral, StringLiteral } from "./literals";
 import { Operator } from "./operator";
+import { IndexType } from "./statements";
 import { IVisitor } from "./visitor";
 
 export abstract class ExpressionResult extends AST {}
@@ -83,6 +84,16 @@ export class CallExpression extends ExpressionResult {
 
 export class VariableExpression extends ExpressionResult {
     constructor(public identifier: Identifier) {
+        super();
+    }
+
+    accept(visitor: IVisitor, arg: any): void {
+        throw new Error("Method not implemented.");
+    }
+}
+
+export class ArrayExperession extends ExpressionResult {
+    constructor(public identifier: Identifier, public indexes: IndexType[]){
         super();
     }
 

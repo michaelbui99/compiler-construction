@@ -17,12 +17,13 @@ import {
     StringLiteralExpression,
     UnaryExpression,
     VariableExpression,
+    ArrayExperession,
 } from "./expression";
 import { Identifier } from "./identifier";
 import { BooleanLiteral, IntegerLiteral, StringLiteral } from "./literals";
 import { Operator } from "./operator";
 import { Program } from "./program";
-import { AssStatement, BreakStatement, ForStatement, IffStatement, OutStatement, RetStatement, Statement, Statements } from "./statements";
+import { AssStatement, BreakStatement, ForStatement, IffStatement, IndexType, OutStatement, RetStatement, Statement, Statements } from "./statements";
 
 export class Parser {
     private scanner: Scanner;
@@ -110,9 +111,14 @@ export class Parser {
                 this.accept(TokenKind.ASSIGN);
                 const assIdentifierToken = this.accept(TokenKind.IDENTIFIER);
                 const assIdentifier = new Identifier(assIdentifierToken.spelling);
+                let indexes = [] as IndexType[];
+                // @ts-ignore
+                if (this.currentTerminal.kind === TokenKind.INDEX){
+                    indexes = this.parseIndex();
+                }
                 const assExpression = this.parseExpressionResult();
                 this.accept(TokenKind.PERCENT);
-                return new AssStatement(assIdentifier, assExpression);
+                return new AssStatement(assIdentifier, assExpression, indexes);
             case TokenKind.RETURN:
                 this.accept(TokenKind.RETURN);
                 const retExpression = this.parseExpressionResult();
@@ -166,8 +172,12 @@ export class Parser {
                 const identifier = new Identifier(identifierToken.spelling);
                 if (this.isExpressionToken()) {
                     const expressionList = this.parseExpressionList();
-                    this.accept(TokenKind.PERCENT);
+                    this.accept(TokenKind.PERCENT); // TODO: do we need this???
                     return new CallExpression(identifier, expressionList);
+                    // @ts-ignore
+                } else if (this.currentTerminal.kind === TokenKind.INDEX){
+                    const indexList = this.parseIndex();
+                    return new ArrayExperession(identifier,indexList);
                 }
                 return new VariableExpression(identifier);
         }
@@ -215,6 +225,24 @@ export class Parser {
         }
 
         return res;
+    }
+
+    private parseIndex(): IndexType[]{
+        this.accept(TokenKind.INDEX);
+        let token = [] as IndexType[];
+        token.push(this.parseIndexType());
+        while (this.currentTerminal.kind === TokenKind.INDEX){
+            token.push(this.parseIndexType());
+        }
+        return token;
+    }
+
+    private parseIndexType():IndexType{
+        if (this.currentTerminal.kind === TokenKind.INTEGER_LITTERAL){
+            return new IntegerLiteral(this.accept(TokenKind.INTEGER_LITTERAL).spelling);
+        } else {
+            return new Identifier(this.accept(TokenKind.IDENTIFIER).spelling);
+        }
     }
 
     private parseExpression6(): ExpressionResult {
@@ -307,6 +335,7 @@ export class Parser {
         if (this.currentTerminal.kind === TokenKind.ARR) {
             this.accept(TokenKind.ARR);
             const expressionList = this.parseExpressionList();
+            this.accept(TokenKind.PERCENT);
             return new VariableDeclaration(
                 new Identifier(identifierToken.spelling),
                 undefined,
