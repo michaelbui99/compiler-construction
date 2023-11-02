@@ -34,7 +34,7 @@ describe("Scan tokens", () => {
     });
 
     test("Correct tokens are scanned from source 2", () => {
-        let source = "fun addNums a b thn ret a add b% end";
+        let source = "fun addNums a int b int thn ret a add b% end";
         let scanner = new Scanner(source);
 
         let tokens = scanner.scanAll();
@@ -43,7 +43,9 @@ describe("Scan tokens", () => {
             { kind: TokenKind.FUNCTION, spelling: "fun" },
             { kind: TokenKind.IDENTIFIER, spelling: "addNums" },
             { kind: TokenKind.IDENTIFIER, spelling: "a" },
+            { kind: TokenKind.TYPE, spelling: "int" },
             { kind: TokenKind.IDENTIFIER, spelling: "b" },
+            { kind: TokenKind.TYPE, spelling: "int" },
             { kind: TokenKind.THEN, spelling: "thn" },
             { kind: TokenKind.RETURN, spelling: "ret" },
             { kind: TokenKind.IDENTIFIER, spelling: "a" },

@@ -26,6 +26,8 @@ export enum TokenKind {
     PERCENT = "PERCENT",
     EOF = "EOF",
     ERROR = "ERROR",
+
+    TYPE = "TYPE",
 }
 
 const keywordKindMappings = new Map<string, TokenKind>([
@@ -45,6 +47,8 @@ const keywordKindMappings = new Map<string, TokenKind>([
     ["brk", TokenKind.BREAK],
     ["tru", TokenKind.BOOLEAN_LITTERAL],
     ["arr", TokenKind.ARR],
+    ["bol", TokenKind.TYPE],
+    ["int", TokenKind.TYPE],
 ]);
 
 const operators = new Map<string, TokenKind>([
@@ -79,35 +83,35 @@ export class Token {
     }
 
     public isBooleanOperator(): boolean {
-        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
+        return this.isKindAndHasOneOfSpelling(TokenKind.OPERATOR, [
             "and",
             "or",
         ]);
     }
 
     public isCompareOperator(): boolean {
-        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
+        return this.isKindAndHasOneOfSpelling(TokenKind.OPERATOR, [
             "grt",
             "lst",
         ]);
     }
 
     public isAddOperator(): boolean {
-        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
+        return this.isKindAndHasOneOfSpelling(TokenKind.OPERATOR, [
             "add",
             "sub",
         ]);
     }
 
     public isMultOperator(): boolean {
-        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
+        return this.isKindAndHasOneOfSpelling(TokenKind.OPERATOR, [
             "mul",
             "div",
             "mod",
         ]);
     }
 
-    private isKindAndHasEitherSpelling(kind: TokenKind, spellings: string[]) {
+    private isKindAndHasOneOfSpelling(kind: TokenKind, spellings: string[]) {
         return this.kind === kind && spellings.includes(this.spelling);
     }
 }
