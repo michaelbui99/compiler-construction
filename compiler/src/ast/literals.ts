@@ -8,7 +8,7 @@ export class StringLiteral extends Terminal {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitStringLiteral(this, arg);
     }
 }
 
@@ -16,10 +16,18 @@ export class IntegerLiteral extends Terminal {
     constructor(public spelling: string) {
         super(spelling);
     }
+
+    accept(visitor: IVisitor, arg: any) {
+        visitor.visitIntegerLiteral(this, arg);
+    }
 }
 
 export class BooleanLiteral extends Terminal {
     constructor(public spelling: string) {
         super(spelling);
+    }
+
+    accept(visitor: IVisitor, arg: any) {
+        visitor.visitBooleanLiteral(this, arg);
     }
 }

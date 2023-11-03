@@ -8,6 +8,6 @@ export class Block extends AST {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitBlock(this, arg);
     }
 }

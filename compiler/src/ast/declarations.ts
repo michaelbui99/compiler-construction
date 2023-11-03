@@ -21,7 +21,7 @@ export class VariableDeclaration extends Declaration {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitVariableDeclaration(this, arg);
     }
 }
 
@@ -30,7 +30,7 @@ export class GetDelcaration extends Declaration {
         super(identifier);
     }
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitGetDeclaration(this, arg);
     }
 }
 
@@ -45,6 +45,6 @@ export class FunctionDeclaration extends Declaration {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitFunctionDeclaration(this, arg);
     }
 }

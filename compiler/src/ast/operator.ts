@@ -7,6 +7,6 @@ export class Operator extends Terminal {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitOperator(this, arg);
     }
 }
