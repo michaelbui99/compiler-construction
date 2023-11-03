@@ -317,7 +317,10 @@ export class Parser {
     }
 
     private parseExpression2(): ExpressionResult {
-        if (this.currentTerminal.spelling === "not") {
+        if (
+            this.currentTerminal.spelling === "not" ||
+            this.currentTerminal.spelling === "len"
+        ) {
             const operator = this.parseOperator();
             const expression = this.parsePrimaryExpression();
             return new UnaryExpression(operator, expression);
@@ -338,9 +341,20 @@ export class Parser {
         // @ts-ignore
         while (this.currentTerminal.kind === TokenKind.IDENTIFIER) {
             const token = this.accept(TokenKind.IDENTIFIER);
-            const typeToken = this.accept(TokenKind.TYPE);
+            let typeToken: Token;
+            // @ts-ignore
+            if (this.currentTerminal.kind === TokenKind.TYPE) {
+                typeToken = this.accept(TokenKind.TYPE);
+                // @ts-ignore
+            } else if (this.currentTerminal.kind === TokenKind.ARRAY) {
+                typeToken = this.accept(TokenKind.ARRAY);
+            } else {
+                this.reportError(
+                    "Type was not declared for function parameter"
+                );
+            }
             funcArguments.push(new Identifier(token.spelling));
-            funcArgumentTypes.push(new Type(typeToken.spelling));
+            funcArgumentTypes.push(new Type(typeToken!.spelling));
         }
 
         this.accept(TokenKind.THEN);
@@ -416,6 +430,19 @@ export class Parser {
     }
 
     private accept(expectedTokenKind: TokenKind): Token {
+        let acceptedToken = this.currentTerminal;
+        if (this.currentTerminal.kind === expectedTokenKind) {
+            this.currentTerminal = this.scanner.scan();
+        } else {
+            this.reportError(
+                `unable to find token kind ${expectedTokenKind}, got ${this.currentTerminal.kind}`
+            );
+        }
+
+        return acceptedToken;
+    }
+
+    private acceptEither(expectedTokenKind: TokenKind): Token {
         let acceptedToken = this.currentTerminal;
         if (this.currentTerminal.kind === expectedTokenKind) {
             this.currentTerminal = this.scanner.scan();

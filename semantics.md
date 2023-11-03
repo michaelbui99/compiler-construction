@@ -1,4 +1,4 @@
-# Semantic constraint
+# Semantic constraints
 
 name = variable | function | array
 
@@ -11,7 +11,15 @@ name = variable | function | array
 -   A function is part of its own function scope.
 -   A name may be defined on different scope levels. Only the inner most definition is visible. (shadowing)
 -   The number of arguments in a function call must be the same as the number of parameters in the function definition.
--   the only unary operator is `not` and only be used on both booleans and integers.
+-   The types of arguments passed in a function call must match the types declared in the function declaration.
+-   the only unary operator is `not` and can only be used on booleans and integers.
 -   A name declared as variable can only be reassigned to a new value of the same type that it was declared as.
+-   There are no operators available for `str` type
+-   All arrays are assumed to be `int` arrays and arrays can only be initialized with integer values.
+-   `grt`, `lst`, `add`, `sub`, `mul`, `mod`, and `div` are only allowed to be used on integer values.
+-   `and` and `orr` are only allowed to be used on boolean values.
+-   `eql` can be used on integer and boolean values.
+-   `len` can be used on integers, booleans and arrays. `len` will return the amount of elements in the array and returns 1 for integers and booleans.
+-   Expressions evaluated in `for` and `iff` statements has to return a boolean.
 
-# TODO: Update grammar with types bol, int and arr
+-   `get` delcarations will assign an array of integers to the specified name of the declaration. Each integer in the array represents the ASCII representation of a character.

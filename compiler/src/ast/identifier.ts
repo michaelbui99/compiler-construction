@@ -6,7 +6,7 @@ export class Identifier extends Terminal {
         super(spelling);
     }
 
-    accept(visitor: IVisitor, arg: any) {
+    accept(visitor: IVisitor, arg: any): any {
         visitor.visitIdentifier(this, arg);
     }
 }

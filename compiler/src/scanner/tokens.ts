@@ -47,6 +47,7 @@ const keywordKindMappings = new Map<string, TokenKind>([
     ["tru", TokenKind.BOOLEAN_LITTERAL],
     ["bol", TokenKind.TYPE],
     ["int", TokenKind.TYPE],
+    ["str", TokenKind.TYPE],
 ]);
 
 const operators = new Map<string, TokenKind>([
@@ -61,6 +62,7 @@ const operators = new Map<string, TokenKind>([
     ["and", TokenKind.OPERATOR],
     ["orr", TokenKind.OPERATOR],
     ["not", TokenKind.OPERATOR],
+    ["len", TokenKind.OPERATOR],
 ]);
 
 export class Token {

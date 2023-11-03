@@ -16,7 +16,7 @@ Statement ::= ExpressionResult **%**
 | **brk**
 
 Declaration ::= **get** **Identifier** **%**
-| **fun** **Identifier** (**Identifier** **Type**)\* **thn** Statements **end**
+| **fun** **Identifier** (**Identifier** (**Type** | **arr**) )\* **thn** Statements **end**
 | **let** **Identifier** (**arr** ExpressionList | ExpressionResult) **%**
 
 ExpressionResult ::= Expression6 (**BooleanOperator** Expression6 )\*
@@ -45,11 +45,11 @@ Expression4 ::= Expression3 | Expression3 AddOperator Expression3
 
 Expression3 ::= Expression2 | Expression2 MultOperator Expression2
 
-Expression2 ::= PrimaryExpression | **not** PrimaryExpression
+Expression2 ::= PrimaryExpression | **not** PrimaryExpression | **len** PrimaryExpression
 
 Index ::= (#(**InterLitteral**)|(**Identifier**))+
 
-Type ::= bol | int
+Type ::= **bol** | **int** | **str**
 
 ```
 NOTE: Indexing arrays:
@@ -59,6 +59,7 @@ let x myArr #0 --- x is now 1
 ass myArr #0 2
 out myArr #0 --- prints 2
 
+len myArr
 
 6 * 5
 
