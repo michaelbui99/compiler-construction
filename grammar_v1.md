@@ -16,7 +16,7 @@ Statement ::= ExpressionResult **%**
 | **brk**
 
 Declaration ::= **get** **Identifier** **%**
-| **fun** **Identifier** (**Identifier**) **thn** Statements **end**
+| **fun** **Identifier** (**Identifier** **Type**)\* **thn** Statements **end**
 | **let** **Identifier** (**arr** ExpressionList | ExpressionResult) **%**
 
 ExpressionResult ::= Expression6 (**BooleanOperator** Expression6 )\*
@@ -48,6 +48,8 @@ Expression3 ::= Expression2 | Expression2 MultOperator Expression2
 Expression2 ::= PrimaryExpression | **not** PrimaryExpression
 
 Index ::= (#(**InterLitteral**)|(**Identifier**))+
+
+Type ::= bol | int
 
 ```
 NOTE: Indexing arrays:

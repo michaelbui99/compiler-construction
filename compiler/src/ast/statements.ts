@@ -12,7 +12,7 @@ export class Statements extends AST {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitStatements(this, arg);
     }
 }
 
@@ -26,7 +26,7 @@ export class IffStatement extends Statement {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitIffStatement(this, arg);
     }
 }
 
@@ -39,7 +39,7 @@ export class ForStatement extends Statement {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitForStatement(this, arg);
     }
 }
 
@@ -49,23 +49,23 @@ export class OutStatement extends Statement {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitOutStatement(this, arg);
     }
 }
 
-export type IndexType = Identifier|IntegerLiteral;
+export type IndexType = Identifier | IntegerLiteral;
 
 export class AssStatement extends Statement {
     constructor(
         public identifier: Identifier,
         public expression: ExpressionResult,
-        public index: IndexType[]|undefined = undefined
+        public index: IndexType[] | undefined = undefined
     ) {
         super();
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitAssStatement(this, arg);
     }
 }
 
@@ -75,17 +75,16 @@ export class RetStatement extends Statement {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitRetStatement(this, arg);
     }
 }
 
-export class BreakStatement extends Statement{
-    constructor(){
+export class BreakStatement extends Statement {
+    constructor() {
         super();
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitBreakStatement(this, arg);
     }
-    
 }

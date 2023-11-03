@@ -14,7 +14,7 @@ export class ExpressionList extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitExpressionList(this, arg);
     }
 }
 
@@ -28,7 +28,7 @@ export class BinaryExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitBinaryExpression(this, arg);
     }
 }
 
@@ -38,7 +38,7 @@ export class UnaryExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitUnaryExpression(this, arg);
     }
 }
 
@@ -48,7 +48,7 @@ export class IntLiteralExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitIntegerLiteralExpression(this, arg);
     }
 }
 
@@ -58,7 +58,7 @@ export class StringLiteralExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitStringLiteralExpression(this, arg);
     }
 }
 
@@ -68,7 +68,7 @@ export class BooleanLiteralExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitBooleanLiteralExpression(this, arg);
     }
 }
 
@@ -78,7 +78,7 @@ export class CallExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitCallExpression(this, arg);
     }
 }
 
@@ -88,16 +88,16 @@ export class VariableExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitVariableExpression(this, arg);
     }
 }
 
 export class ArrayExperession extends ExpressionResult {
-    constructor(public identifier: Identifier, public indexes: IndexType[]){
+    constructor(public identifier: Identifier, public indexes: IndexType[]) {
         super();
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitArrayExpression(this, arg);
     }
 }

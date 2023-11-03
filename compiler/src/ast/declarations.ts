@@ -2,6 +2,7 @@ import { AST } from "./ast";
 import { ExpressionList, ExpressionResult } from "./expression";
 import { Identifier } from "./identifier";
 import { Statement, Statements } from "./statements";
+import { Type } from "./types";
 import { IVisitor } from "./visitor";
 
 export abstract class Declaration extends Statement {
@@ -20,7 +21,7 @@ export class VariableDeclaration extends Declaration {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitVariableDeclaration(this, arg);
     }
 }
 
@@ -29,7 +30,7 @@ export class GetDelcaration extends Declaration {
         super(identifier);
     }
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitGetDeclaration(this, arg);
     }
 }
 
@@ -37,12 +38,13 @@ export class FunctionDeclaration extends Declaration {
     constructor(
         public identifier: Identifier,
         public params: Identifier[],
+        public paramTypes: Type[],
         public statments: Statements
     ) {
         super(identifier);
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        throw new Error("Method not implemented.");
+        visitor.visitFunctionDeclaration(this, arg);
     }
 }

@@ -23,7 +23,18 @@ import { Identifier } from "./identifier";
 import { BooleanLiteral, IntegerLiteral, StringLiteral } from "./literals";
 import { Operator } from "./operator";
 import { Program } from "./program";
-import { AssStatement, BreakStatement, ForStatement, IffStatement, IndexType, OutStatement, RetStatement, Statement, Statements } from "./statements";
+import {
+    AssStatement,
+    BreakStatement,
+    ForStatement,
+    IffStatement,
+    IndexType,
+    OutStatement,
+    RetStatement,
+    Statement,
+    Statements,
+} from "./statements";
+import { Type } from "./types";
 
 export class Parser {
     private scanner: Scanner;
@@ -94,14 +105,18 @@ export class Parser {
                     elseStatements = this.parseStatements();
                 }
                 this.accept(TokenKind.END);
-                return new IffStatement(ifExpResult,ifStatements,elseStatements);
+                return new IffStatement(
+                    ifExpResult,
+                    ifStatements,
+                    elseStatements
+                );
             case TokenKind.FOR:
                 this.accept(TokenKind.FOR);
                 const exppressionResult = this.parseExpressionResult();
                 this.accept(TokenKind.THEN);
                 const statements = this.parseStatements();
                 this.accept(TokenKind.END);
-                return new ForStatement(exppressionResult,statements);
+                return new ForStatement(exppressionResult, statements);
             case TokenKind.OUT:
                 this.accept(TokenKind.OUT);
                 const expResult = this.parseExpressionResult();
@@ -110,10 +125,12 @@ export class Parser {
             case TokenKind.ASSIGN:
                 this.accept(TokenKind.ASSIGN);
                 const assIdentifierToken = this.accept(TokenKind.IDENTIFIER);
-                const assIdentifier = new Identifier(assIdentifierToken.spelling);
+                const assIdentifier = new Identifier(
+                    assIdentifierToken.spelling
+                );
                 let indexes = [] as IndexType[];
                 // @ts-ignore
-                if (this.currentTerminal.kind === TokenKind.INDEX){
+                if (this.currentTerminal.kind === TokenKind.INDEX) {
                     indexes = this.parseIndex();
                 }
                 const assExpression = this.parseExpressionResult();
@@ -130,7 +147,7 @@ export class Parser {
             default:
                 this.reportError(
                     `Failed to parse statement from kind ${this.currentTerminal.kind}`
-                    );
+                );
                 throw new Error("Unreachable");
         }
     }
@@ -175,9 +192,9 @@ export class Parser {
                     this.accept(TokenKind.PERCENT); // TODO: do we need this???
                     return new CallExpression(identifier, expressionList);
                     // @ts-ignore
-                } else if (this.currentTerminal.kind === TokenKind.INDEX){
+                } else if (this.currentTerminal.kind === TokenKind.INDEX) {
                     const indexList = this.parseIndex();
-                    return new ArrayExperession(identifier,indexList);
+                    return new ArrayExperession(identifier, indexList);
                 }
                 return new VariableExpression(identifier);
         }
@@ -214,7 +231,7 @@ export class Parser {
         return new ExpressionList(expressions);
     }
 
-    private parseExpressionResult() : ExpressionResult {
+    private parseExpressionResult(): ExpressionResult {
         let res: ExpressionResult = this.parseExpression6();
 
         while (this.currentTerminal.isBooleanOperator()) {
@@ -227,19 +244,21 @@ export class Parser {
         return res;
     }
 
-    private parseIndex(): IndexType[]{
+    private parseIndex(): IndexType[] {
         this.accept(TokenKind.INDEX);
         let token = [] as IndexType[];
         token.push(this.parseIndexType());
-        while (this.currentTerminal.kind === TokenKind.INDEX){
+        while (this.currentTerminal.kind === TokenKind.INDEX) {
             token.push(this.parseIndexType());
         }
         return token;
     }
 
-    private parseIndexType():IndexType{
-        if (this.currentTerminal.kind === TokenKind.INTEGER_LITTERAL){
-            return new IntegerLiteral(this.accept(TokenKind.INTEGER_LITTERAL).spelling);
+    private parseIndexType(): IndexType {
+        if (this.currentTerminal.kind === TokenKind.INTEGER_LITTERAL) {
+            return new IntegerLiteral(
+                this.accept(TokenKind.INTEGER_LITTERAL).spelling
+            );
         } else {
             return new Identifier(this.accept(TokenKind.IDENTIFIER).spelling);
         }
@@ -303,7 +322,6 @@ export class Parser {
             const expression = this.parsePrimaryExpression();
             return new UnaryExpression(operator, expression);
         }
-
         return this.parsePrimaryExpression();
     }
 
@@ -316,24 +334,32 @@ export class Parser {
         const functionName = new Identifier(functionNameToken.spelling);
 
         const funcArguments = [] as Identifier[];
+        const funcArgumentTypes = [] as Type[];
         // @ts-ignore
         while (this.currentTerminal.kind === TokenKind.IDENTIFIER) {
             const token = this.accept(TokenKind.IDENTIFIER);
+            const typeToken = this.accept(TokenKind.TYPE);
             funcArguments.push(new Identifier(token.spelling));
+            funcArgumentTypes.push(new Type(typeToken.spelling));
         }
 
         this.accept(TokenKind.THEN);
         const statements = this.parseStatements();
         this.accept(TokenKind.END);
-        return new FunctionDeclaration(functionName, funcArguments, statements);
+        return new FunctionDeclaration(
+            functionName,
+            funcArguments,
+            funcArgumentTypes,
+            statements
+        );
     }
 
     private parseVariableDeclaration(): VariableDeclaration {
         this.accept(TokenKind.LET);
         const identifierToken = this.accept(TokenKind.IDENTIFIER);
 
-        if (this.currentTerminal.kind === TokenKind.ARR) {
-            this.accept(TokenKind.ARR);
+        if (this.currentTerminal.kind === TokenKind.ARRAY) {
+            this.accept(TokenKind.ARRAY);
             const expressionList = this.parseExpressionList();
             this.accept(TokenKind.PERCENT);
             return new VariableDeclaration(
