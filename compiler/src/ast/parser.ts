@@ -358,8 +358,8 @@ export class Parser {
         this.accept(TokenKind.LET);
         const identifierToken = this.accept(TokenKind.IDENTIFIER);
 
-        if (this.currentTerminal.kind === TokenKind.ARR) {
-            this.accept(TokenKind.ARR);
+        if (this.currentTerminal.kind === TokenKind.ARRAY) {
+            this.accept(TokenKind.ARRAY);
             const expressionList = this.parseExpressionList();
             this.accept(TokenKind.PERCENT);
             return new VariableDeclaration(

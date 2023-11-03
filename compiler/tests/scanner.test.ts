@@ -134,4 +134,22 @@ describe("Scan tokens", () => {
             { kind: TokenKind.EOF, spelling: "" },
         ] as Token[]);
     });
+
+    test("Creation of array", () => {
+        let source = "let x arr 1 2 3 %";
+        let scanner = new Scanner(source);
+
+        let tokens = scanner.scanAll();
+
+        expect(tokens).toEqual([
+            { kind: TokenKind.LET, spelling: "let" },
+            { kind: TokenKind.IDENTIFIER, spelling: "x" },
+            { kind: TokenKind.ARRAY, spelling: "arr" },
+            { kind: TokenKind.INTEGER_LITTERAL, spelling: "1" },
+            { kind: TokenKind.INTEGER_LITTERAL, spelling: "2" },
+            { kind: TokenKind.INTEGER_LITTERAL, spelling: "3" },
+            { kind: TokenKind.PERCENT, spelling: "%" },
+            { kind: TokenKind.EOF, spelling: "" },
+        ] as Token[]);
+    });
 });

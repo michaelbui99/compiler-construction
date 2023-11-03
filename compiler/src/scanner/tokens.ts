@@ -8,7 +8,7 @@ export enum TokenKind {
     // Keywords
     LET = "LET",
     ASSIGN = "ASSIGN",
-    ARRARY = "ARRAY",
+    ARRAY = "ARRAY",
     IFF = "IFF",
     THEN = "THEN",
     ELSE = "ELSE",
@@ -18,7 +18,6 @@ export enum TokenKind {
     BREAK = "BRK",
     GET = "GET",
     OUT = "OUT",
-    ARR = "ARR",
     INDEX = "INDEX",
     RETURN = "RETURN",
     FUNCTION = "FUNCTION",
@@ -33,7 +32,7 @@ export enum TokenKind {
 const keywordKindMappings = new Map<string, TokenKind>([
     ["let", TokenKind.LET],
     ["ass", TokenKind.ASSIGN],
-    ["arr", TokenKind.ARRARY],
+    ["arr", TokenKind.ARRAY],
     ["iff", TokenKind.IFF],
     ["thn", TokenKind.THEN],
     ["els", TokenKind.ELSE],
@@ -46,7 +45,6 @@ const keywordKindMappings = new Map<string, TokenKind>([
     ["fun", TokenKind.FUNCTION],
     ["brk", TokenKind.BREAK],
     ["tru", TokenKind.BOOLEAN_LITTERAL],
-    ["arr", TokenKind.ARR],
     ["bol", TokenKind.TYPE],
     ["int", TokenKind.TYPE],
 ]);
@@ -83,35 +81,35 @@ export class Token {
     }
 
     public isBooleanOperator(): boolean {
-        return this.isKindAndHasOneOfSpelling(TokenKind.OPERATOR, [
+        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "and",
             "or",
         ]);
     }
 
     public isCompareOperator(): boolean {
-        return this.isKindAndHasOneOfSpelling(TokenKind.OPERATOR, [
+        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "grt",
             "lst",
         ]);
     }
 
     public isAddOperator(): boolean {
-        return this.isKindAndHasOneOfSpelling(TokenKind.OPERATOR, [
+        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "add",
             "sub",
         ]);
     }
 
     public isMultOperator(): boolean {
-        return this.isKindAndHasOneOfSpelling(TokenKind.OPERATOR, [
+        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "mul",
             "div",
             "mod",
         ]);
     }
 
-    private isKindAndHasOneOfSpelling(kind: TokenKind, spellings: string[]) {
+    private isKindAndHasEitherSpelling(kind: TokenKind, spellings: string[]) {
         return this.kind === kind && spellings.includes(this.spelling);
     }
 }
