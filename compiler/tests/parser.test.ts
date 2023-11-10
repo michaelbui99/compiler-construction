@@ -197,4 +197,37 @@ describe("Scan tokens", () => {
             )
         );
     });
+
+    test("static array of size declaration", () => {
+        let source = "let myArr arr #2 #2%";
+        let scanner = new Scanner(source);
+
+        let parser = new Parser(scanner);
+
+        const program = parser.parseProgram();
+        expect(program).toEqual(
+            new Program(
+                new Block(
+                    new Statements([
+                        new VariableDeclaration(
+                            new Identifier("myArr"),
+                            undefined,
+                            undefined,
+                            [new IntegerLiteral("2"), new IntegerLiteral("2")]
+                        ),
+                    ])
+                )
+            )
+        );
+    });
+
+    test("Empty source code", () => {
+        let source = "";
+        let scanner = new Scanner(source);
+
+        let parser = new Parser(scanner);
+
+        const program = parser.parseProgram();
+        expect(program).toEqual(new Program(new Block(new Statements([]))));
+    });
 });

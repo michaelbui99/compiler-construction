@@ -67,15 +67,18 @@ export class Checker implements IVisitor {
     }
 
     visitIffStatement(node: IffStatement, args: any) {
+        this.idTable.openScope();
         node.expression.accept(this, args);
         node.thnPart.accept(this, args);
         node.elsPart?.accept(this, args);
-
+        this.idTable.closeScope();
         return null;
     }
     visitForStatement(node: ForStatement, args: any) {
+        this.idTable.openScope();
         node.expression.accept(this, args);
         node.statements.accept(this, args);
+        this.idTable.closeScope();
 
         return null;
     }
@@ -106,18 +109,20 @@ export class Checker implements IVisitor {
     visitFunctionDeclaration(node: FunctionDeclaration, args: any) {
         const id = node.identifier.accept(this, args);
         this.idTable.declare(id, node);
+        this.idTable.openScope();
         node.params.forEach((param) => param.accept(this, args));
         node.paramTypes.forEach((paramType) => paramType.accept(this, args));
         node.statments.accept(this, args);
+        this.idTable.closeScope();
 
         return null;
     }
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
-        node.identifier.accept(this, args);
+        const id = node.identifier.accept(this, args);
+        this.idTable.declare(id, node);
         node.expression?.accept(this, args);
         node.expressionList?.accept(this, args);
-
         return null;
     }
     visitIntegerLiteralExpression(node: IntLiteralExpression, args: any) {
@@ -132,76 +137,88 @@ export class Checker implements IVisitor {
     visitUnaryExpression(node: UnaryExpression, args: any) {
         const token = node.operator.accept(this, args) as Token;
         const operand = node.operand.accept(this, args) as ExpressionType;
-        if (token.isUnaryOperand()){
-            if (token.spelling === 'len'){
+        if (token.isUnaryOperand()) {
+            if (token.spelling === "len") {
                 return {
                     kind: ExpressionTypeKind.INTEGER,
-                    spelling: token.spelling // TODO: not sure how to hava this
+                    spelling: token.spelling, // TODO: not sure how to hava this
                 } as ExpressionType;
-            } else if (token.spelling === 'not'){
-                if (operand.kind === ExpressionTypeKind.BOOLEAN ||
-                    operand.kind === ExpressionTypeKind.INTEGER){
+            } else if (token.spelling === "not") {
+                if (
+                    operand.kind === ExpressionTypeKind.BOOLEAN ||
+                    operand.kind === ExpressionTypeKind.INTEGER
+                ) {
                     return {
                         kind: operand.kind,
-                        spelling: token.spelling // TODO: not sure what to have this
+                        spelling: token.spelling, // TODO: not sure what to have this
                     } as ExpressionType;
                 }
             }
         }
-        throw new CompilerError(`Unable to parse unary expression ${token.spelling} onto ${operand.spelling}`);
+        throw new CompilerError(
+            `Unable to parse unary expression ${token.spelling} onto ${operand.spelling}`
+        );
     }
     visitBinaryExpression(node: BinaryExpression, args: any) {
         const operand1 = node.operand1.accept(this, args) as ExpressionType;
         const token = node.operator.accept(this, args) as Token;
         const operand2 = node.operand2.accept(this, args) as ExpressionType;
-        if (token.isBooleanOperator()){
-            if (operand1.kind === ExpressionTypeKind.BOOLEAN && 
-                operand2.kind === ExpressionTypeKind.BOOLEAN){
+        if (token.isBooleanOperator()) {
+            if (
+                operand1.kind === ExpressionTypeKind.BOOLEAN &&
+                operand2.kind === ExpressionTypeKind.BOOLEAN
+            ) {
                 return {
                     kind: ExpressionTypeKind.BOOLEAN,
-                    spelling: token.spelling // TODO: what this should actually be
+                    spelling: token.spelling, // TODO: what this should actually be
                 } as ExpressionType;
             }
-        } else if (token.isAddOperator() || token.isMultOperator()){
-            if (operand1.kind === ExpressionTypeKind.INTEGER &&
-                operand2.kind === ExpressionTypeKind.INTEGER){
+        } else if (token.isAddOperator() || token.isMultOperator()) {
+            if (
+                operand1.kind === ExpressionTypeKind.INTEGER &&
+                operand2.kind === ExpressionTypeKind.INTEGER
+            ) {
                 return {
                     kind: ExpressionTypeKind.INTEGER,
-                    spelling: token.spelling // TODO: what this should actually be
+                    spelling: token.spelling, // TODO: what this should actually be
                 } as ExpressionType;
             }
-        } else if (token.isCompareOperator()){
-            if (operand1.kind === ExpressionTypeKind.INTEGER &&
-                operand2.kind === ExpressionTypeKind.INTEGER){
+        } else if (token.isCompareOperator()) {
+            if (
+                operand1.kind === ExpressionTypeKind.INTEGER &&
+                operand2.kind === ExpressionTypeKind.INTEGER
+            ) {
                 return {
                     kind: ExpressionTypeKind.BOOLEAN,
-                    spelling: token.spelling // TODO: what this should actually be
+                    spelling: token.spelling, // TODO: what this should actually be
                 } as ExpressionType;
             }
         }
-        throw new CompilerError(`operatior ${token.spelling} can not be applies to ${operand1.spelling} and ${operand2.spelling}`);
+        throw new CompilerError(
+            `operatior ${token.spelling} can not be applies to ${operand1.spelling} and ${operand2.spelling}`
+        );
     }
     visitVariableExpression(node: VariableExpression, args: any) {
-        const id = node.identifier.accept(this,args);
+        const id = node.identifier.accept(this, args);
 
         const existingDeclaration = this.idTable.retrieveDeclaration(id);
-        if (!existingDeclaration){
+        if (!existingDeclaration) {
             throw new CompilerError(
                 `No variable of name ${id} has been declared`
-            )
+            );
         }
-        if (!(existingDeclaration instanceof VariableDeclaration)){
-            throw new CompilerError(`Identifier ${id} is not a variable`)
+        if (!(existingDeclaration instanceof VariableDeclaration)) {
+            throw new CompilerError(`Identifier ${id} is not a variable`);
         }
-        if (existingDeclaration.expressionList !== null){
+        if (existingDeclaration.expressionList !== null) {
             return {
                 kind: ExpressionTypeKind.ARRAY,
-                spelling: node.identifier.spelling
+                spelling: node.identifier.spelling,
             } as ExpressionType;
         } else {
             return {
-                kind: existingDeclaration.expression?.accept(this,args),
-                spelling: node.identifier.spelling
+                kind: existingDeclaration.expression?.accept(this, args),
+                spelling: node.identifier.spelling,
             } as ExpressionType;
         }
     }
@@ -247,12 +264,72 @@ export class Checker implements IVisitor {
         return null;
     }
     visitExpressionList(node: ExpressionList, args: any) {
-        node.expressions.forEach((expression) => expression.accept(this, args));
+        const expectedType: ExpressionType = node.expressions[0].accept(
+            this,
+            args
+        );
+        const types = node.expressions.map((expression) =>
+            expression.accept(this, args)
+        );
+
+        const isValidArray = types.every(
+            (type) => type.kind === expectedType.kind
+        );
+
+        if (!isValidArray) {
+            throw new CompilerError(
+                "All elements in array does not have the same type"
+            );
+        }
+
         return null;
     }
     visitArrayExpression(node: ArrayExperession, args: any) {
-        node.identifier.accept(this, args);
-        node.indexes.forEach((index) => index.accept(this, args));
+        const id = node.identifier.accept(this, args);
+        const declaration = this.idTable.retrieveDeclaration(id);
+        if (!declaration) {
+            throw new CompilerError(`Identifier ${id} has not been declared`);
+        }
+
+        // let myArr arr 2 3 4%
+        // let myArr arr #2 #3%
+        // let a myArr #2 #4%
+
+        if (!(declaration instanceof VariableDeclaration)) {
+            throw new CompilerError(`No array with id ${id} has been declared`);
+        }
+
+        if (declaration.expressionList === undefined) {
+            throw new CompilerError(`Identifier ${id} is not an array`);
+        }
+
+        node.indexes.forEach((index) => {
+            const type = index.accept(this, args);
+            if (typeof type === "string") {
+                // It is an identifier
+                const declaration = this.idTable.retrieveDeclaration(type);
+                if (!declaration) {
+                    throw new CompilerError(
+                        `Identifier ${type} has not been declared.`
+                    );
+                } else {
+                    if (!(declaration instanceof VariableDeclaration)) {
+                        throw new CompilerError("stupid");
+                    } else {
+                        if (declaration.expression === undefined) {
+                            throw new CompilerError("stupid");
+                        }
+                        const type: ExpressionType =
+                            declaration.expression.accept(this, args);
+                        if (type.kind !== ExpressionTypeKind.INTEGER) {
+                            throw new CompilerError(
+                                "Only integer type is allowed as index"
+                            );
+                        }
+                    }
+                }
+            }
+        });
         return null;
     }
     visitIdentifier(node: Identifier, args: any) {
@@ -277,7 +354,7 @@ export class Checker implements IVisitor {
         } as ExpressionType;
     }
     visitOperator(node: Operator, args: any) {
-        return new Token(TokenKind.OPERATOR, node.spelling)
+        return new Token(TokenKind.OPERATOR, node.spelling);
     }
     visitType(node: Type, args: any) {
         return null;

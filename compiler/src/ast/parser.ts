@@ -249,6 +249,7 @@ export class Parser {
         let token = [] as IndexType[];
         token.push(this.parseIndexType());
         while (this.currentTerminal.kind === TokenKind.INDEX) {
+            this.accept(TokenKind.INDEX);
             token.push(this.parseIndexType());
         }
         return token;
@@ -371,13 +372,27 @@ export class Parser {
 
         if (this.currentTerminal.kind === TokenKind.ARRAY) {
             this.accept(TokenKind.ARRAY);
-            const expressionList = this.parseExpressionList();
-            this.accept(TokenKind.PERCENT);
-            return new VariableDeclaration(
-                new Identifier(identifierToken.spelling),
-                undefined,
-                expressionList
-            );
+            let expressionList;
+            // @ts-ignore
+            if (this.currentTerminal.kind === TokenKind.INDEX) {
+                const indexes = this.parseIndex();
+                this.accept(TokenKind.PERCENT);
+                return new VariableDeclaration(
+                    new Identifier(identifierToken.spelling),
+                    undefined,
+                    undefined,
+                    indexes
+                );
+            } else {
+                expressionList = this.parseExpressionList();
+                this.accept(TokenKind.PERCENT);
+                return new VariableDeclaration(
+                    new Identifier(identifierToken.spelling),
+                    undefined,
+                    expressionList,
+                    undefined
+                );
+            }
         } else {
             const expression = this.parseExpressionResult();
             this.accept(TokenKind.PERCENT);
@@ -385,6 +400,7 @@ export class Parser {
             return new VariableDeclaration(
                 new Identifier(identifierToken.spelling),
                 expression,
+                undefined,
                 undefined
             );
         }
@@ -411,7 +427,7 @@ export class Parser {
     }
 
     private parseBooleanLiteral(): BooleanLiteral {
-        const token = this.accept(TokenKind.STRING_LITTERAL);
+        const token = this.accept(TokenKind.BOOLEAN_LITTERAL);
         return new BooleanLiteral(token.spelling);
     }
 

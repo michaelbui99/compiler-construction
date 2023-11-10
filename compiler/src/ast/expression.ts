@@ -14,7 +14,7 @@ export class ExpressionList extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitExpressionList(this, arg);
+        return visitor.visitExpressionList(this, arg);
     }
 }
 
@@ -28,7 +28,7 @@ export class BinaryExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitBinaryExpression(this, arg);
+        return visitor.visitBinaryExpression(this, arg);
     }
 }
 
@@ -38,7 +38,7 @@ export class UnaryExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitUnaryExpression(this, arg);
+        return visitor.visitUnaryExpression(this, arg);
     }
 }
 
@@ -48,7 +48,7 @@ export class IntLiteralExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitIntegerLiteralExpression(this, arg);
+        return visitor.visitIntegerLiteralExpression(this, arg);
     }
 }
 
@@ -58,7 +58,7 @@ export class StringLiteralExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitStringLiteralExpression(this, arg);
+        return visitor.visitStringLiteralExpression(this, arg);
     }
 }
 
@@ -68,7 +68,7 @@ export class BooleanLiteralExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitBooleanLiteralExpression(this, arg);
+        return visitor.visitBooleanLiteralExpression(this, arg);
     }
 }
 
@@ -78,7 +78,7 @@ export class CallExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitCallExpression(this, arg);
+        return visitor.visitCallExpression(this, arg);
     }
 }
 
@@ -88,7 +88,7 @@ export class VariableExpression extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitVariableExpression(this, arg);
+        return visitor.visitVariableExpression(this, arg);
     }
 }
 
@@ -98,6 +98,6 @@ export class ArrayExperession extends ExpressionResult {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitArrayExpression(this, arg);
+        return visitor.visitArrayExpression(this, arg);
     }
 }

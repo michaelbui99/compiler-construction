@@ -1,7 +1,7 @@
 import { AST } from "./ast";
 import { ExpressionList, ExpressionResult } from "./expression";
 import { Identifier } from "./identifier";
-import { Statement, Statements } from "./statements";
+import { IndexType, Statement, Statements } from "./statements";
 import { Type } from "./types";
 import { IVisitor } from "./visitor";
 
@@ -15,7 +15,8 @@ export class VariableDeclaration extends Declaration {
     constructor(
         public identifier: Identifier,
         public expression?: ExpressionResult,
-        public expressionList?: ExpressionList
+        public expressionList?: ExpressionList,
+        public indexList?: IndexType[]
     ) {
         super(identifier);
     }

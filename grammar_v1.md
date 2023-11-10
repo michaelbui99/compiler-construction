@@ -17,7 +17,7 @@ Statement ::= ExpressionResult **%**
 
 Declaration ::= **get** **Identifier** **%**
 | **fun** **Identifier** (**Identifier** (**Type** | **arr**) )\* **thn** Statements **end**
-| **let** **Identifier** (**arr** ExpressionList | ExpressionResult) **%**
+| **let** **Identifier** (**arr** Index | ExpressionList) | ExpressionResult **%**
 
 ExpressionResult ::= Expression6 (**BooleanOperator** Expression6 )\*
 

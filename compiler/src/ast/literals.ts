@@ -8,7 +8,7 @@ export class StringLiteral extends Terminal {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitStringLiteral(this, arg);
+        return visitor.visitStringLiteral(this, arg);
     }
 }
 
@@ -18,7 +18,7 @@ export class IntegerLiteral extends Terminal {
     }
 
     accept(visitor: IVisitor, arg: any) {
-        visitor.visitIntegerLiteral(this, arg);
+        return visitor.visitIntegerLiteral(this, arg);
     }
 }
 
@@ -28,6 +28,6 @@ export class BooleanLiteral extends Terminal {
     }
 
     accept(visitor: IVisitor, arg: any) {
-        visitor.visitBooleanLiteral(this, arg);
+        return visitor.visitBooleanLiteral(this, arg);
     }
 }
