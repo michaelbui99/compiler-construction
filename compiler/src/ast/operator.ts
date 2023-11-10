@@ -7,6 +7,6 @@ export class Operator extends Terminal {
     }
 
     accept(visitor: IVisitor, arg: any): any {
-        visitor.visitOperator(this, arg);
+        return visitor.visitOperator(this, arg);
     }
 }

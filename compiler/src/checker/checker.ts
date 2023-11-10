@@ -88,11 +88,34 @@ export class Checker implements IVisitor {
         return null;
     }
     visitAssStatement(node: AssStatement, args: any) {
-        node.identifier.accept(this, args);
+        const spelling : string = node.identifier.accept(this, args);
+        const declaration = this.idTable.retrieveDeclaration(spelling);
+
         node.expression.accept(this, args);
         node.index?.forEach((idx) => idx.accept(this, args));
 
-        return null;
+        if (declaration !== null){
+            if (declaration instanceof VariableDeclaration){
+                if (declaration.expressionList !== undefined ||
+                    declaration.indexList !== undefined){
+                    const expressions = node.index?.map(idx => idx.accept(this,args));
+                    // TODO: somehow find out dimensionality of array
+                } else {
+                    if (node.index !== undefined){
+                        console.log(node.index);
+                        throw new CompilerError(`just arrays can be indexable, not variable ${spelling}`);
+                    }
+                    let typeDefined: ExpressionType = declaration.expression?.accept(this,args);
+                    let typeGiven: ExpressionType = node.expression.accept(this,args);
+                    if (typeDefined.kind === typeGiven.kind){
+                        return null;
+                    } else {
+                        throw new CompilerError(`type ${typeGiven.kind} can not be assigned to ${typeDefined.kind}`);
+                    }
+                }
+            }
+        }
+        throw new CompilerError(`can not assign value to ${spelling}.`);
     }
     visitRetStatement(node: RetStatement, args: any) {
         node.expression.accept(this, args);

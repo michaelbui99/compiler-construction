@@ -7,6 +7,6 @@ export class Identifier extends Terminal {
     }
 
     accept(visitor: IVisitor, arg: any): any {
-        visitor.visitIdentifier(this, arg);
+        return visitor.visitIdentifier(this, arg);
     }
 }

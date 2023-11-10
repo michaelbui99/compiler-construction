@@ -10,10 +10,11 @@ import {
     ExpressionList,
     ExpressionResult,
     IntLiteralExpression,
+    StringLiteralExpression,
     VariableExpression,
 } from "../src/ast/expression";
 import { Identifier } from "../src/ast/identifier";
-import { IntegerLiteral } from "../src/ast/literals";
+import { IntegerLiteral, StringLiteral } from "../src/ast/literals";
 import { Parser } from "../src/ast/parser";
 import { Program } from "../src/ast/program";
 import {
@@ -230,4 +231,17 @@ describe("Scan tokens", () => {
         const program = parser.parseProgram();
         expect(program).toEqual(new Program(new Block(new Statements([]))));
     });
+
+    test("assign a string to something", ()=>{
+        const source = "let a \"me\" % ass a \"Hi\" %";
+        let scanner = new Scanner(source);
+
+        let parser = new Parser(scanner);
+
+        const program = parser.parseProgram();
+        expect(program).toEqual(new Program(new Block(new Statements([
+            new VariableDeclaration(new Identifier("a"),new StringLiteralExpression(new StringLiteral("me"))),
+            new AssStatement(new Identifier("a"), new StringLiteralExpression(new StringLiteral("Hi")))
+            ]))));
+    })
 });

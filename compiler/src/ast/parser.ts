@@ -128,10 +128,13 @@ export class Parser {
                 const assIdentifier = new Identifier(
                     assIdentifierToken.spelling
                 );
-                let indexes = [] as IndexType[];
+                let indexes = [] as IndexType[] | undefined;
                 // @ts-ignore
                 if (this.currentTerminal.kind === TokenKind.INDEX) {
                     indexes = this.parseIndex();
+                }
+                if (indexes?.length === 0){
+                    indexes = undefined;
                 }
                 const assExpression = this.parseExpressionResult();
                 this.accept(TokenKind.PERCENT);
