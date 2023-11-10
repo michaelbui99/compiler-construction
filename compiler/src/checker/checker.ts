@@ -154,7 +154,7 @@ export class Checker implements IVisitor {
         const operand1 = node.operand1.accept(this, args) as ExpressionType;
         const token = node.operator.accept(this, args) as Token;
         const operand2 = node.operand2.accept(this, args) as ExpressionType;
-        if (token.isBooleanOperator() || token.spelling === 'eql'){
+        if (token.isBooleanOperator()){
             if (operand1.kind === ExpressionTypeKind.BOOLEAN && 
                 operand2.kind === ExpressionTypeKind.BOOLEAN){
                 return {
@@ -162,11 +162,19 @@ export class Checker implements IVisitor {
                     spelling: token.spelling // TODO: what this should actually be
                 } as ExpressionType;
             }
-        } else if (token.isCompareOperator() || token.isAddOperator() || token.isMultOperator()){
+        } else if (token.isAddOperator() || token.isMultOperator()){
             if (operand1.kind === ExpressionTypeKind.INTEGER &&
                 operand2.kind === ExpressionTypeKind.INTEGER){
                 return {
                     kind: ExpressionTypeKind.INTEGER,
+                    spelling: token.spelling // TODO: what this should actually be
+                } as ExpressionType;
+            }
+        } else if (token.isCompareOperator()){
+            if (operand1.kind === ExpressionTypeKind.INTEGER &&
+                operand2.kind === ExpressionTypeKind.INTEGER){
+                return {
+                    kind: ExpressionTypeKind.BOOLEAN,
                     spelling: token.spelling // TODO: what this should actually be
                 } as ExpressionType;
             }

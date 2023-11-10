@@ -86,6 +86,7 @@ export class Token {
         return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "and",
             "orr",
+            "eql"
         ]);
     }
 
