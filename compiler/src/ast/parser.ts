@@ -317,10 +317,7 @@ export class Parser {
     }
 
     private parseExpression2(): ExpressionResult {
-        if (
-            this.currentTerminal.spelling === "not" ||
-            this.currentTerminal.spelling === "len"
-        ) {
+        if (this.currentTerminal.isBooleanOperator()) {
             const operator = this.parseOperator();
             const expression = this.parsePrimaryExpression();
             return new UnaryExpression(operator, expression);

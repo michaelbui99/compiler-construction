@@ -6,7 +6,7 @@ export class Operator extends Terminal {
         super(spelling);
     }
 
-    accept(visitor: IVisitor, arg: any): void {
+    accept(visitor: IVisitor, arg: any): any {
         visitor.visitOperator(this, arg);
     }
 }
