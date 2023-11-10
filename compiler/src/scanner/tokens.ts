@@ -85,7 +85,8 @@ export class Token {
     public isBooleanOperator(): boolean {
         return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "and",
-            "or",
+            "orr",
+            "eql"
         ]);
     }
 
@@ -109,6 +110,13 @@ export class Token {
             "div",
             "mod",
         ]);
+    }
+
+    public isUnaryOperand(): boolean {
+        return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
+            "not",
+            "len"
+        ])
     }
 
     private isKindAndHasEitherSpelling(kind: TokenKind, spellings: string[]) {
