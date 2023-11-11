@@ -210,6 +210,7 @@ export class Checker implements IVisitor {
         if (!(existingDeclaration instanceof VariableDeclaration)) {
             throw new CompilerError(`Identifier ${id} is not a variable`);
         }
+
         if (existingDeclaration.expressionList !== null) {
             return {
                 kind: ExpressionTypeKind.ARRAY,
