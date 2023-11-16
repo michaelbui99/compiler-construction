@@ -7,6 +7,6 @@ export class Type extends Terminal {
     }
 
     accept(visitor: IVisitor, arg: any) {
-        visitor.visitType(this, arg);
+        return visitor.visitType(this, arg);
     }
 }

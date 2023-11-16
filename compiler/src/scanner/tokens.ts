@@ -3,7 +3,7 @@ export enum TokenKind {
     OPERATOR = "OPERATOR",
     STRING_LITTERAL = "STRING_LITTERAL",
     INTEGER_LITTERAL = "INTEGER_LITTERAL",
-    BOOLEAN_LITTERAL = "TRU",
+    BOOLEAN_LITTERAL = "BOOLEAN_LITTERAL",
 
     // Keywords
     LET = "LET",
@@ -86,7 +86,7 @@ export class Token {
         return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "and",
             "orr",
-            "eql"
+            "eql",
         ]);
     }
 
@@ -115,8 +115,8 @@ export class Token {
     public isUnaryOperand(): boolean {
         return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "not",
-            "len"
-        ])
+            "len",
+        ]);
     }
 
     private isKindAndHasEitherSpelling(kind: TokenKind, spellings: string[]) {

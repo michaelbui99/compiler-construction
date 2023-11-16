@@ -12,7 +12,7 @@ export class Statements extends AST {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitStatements(this, arg);
+        return visitor.visitStatements(this, arg);
     }
 }
 
@@ -26,7 +26,7 @@ export class IffStatement extends Statement {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitIffStatement(this, arg);
+        return visitor.visitIffStatement(this, arg);
     }
 }
 
@@ -39,7 +39,7 @@ export class ForStatement extends Statement {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitForStatement(this, arg);
+        return visitor.visitForStatement(this, arg);
     }
 }
 
@@ -49,7 +49,7 @@ export class OutStatement extends Statement {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitOutStatement(this, arg);
+        return visitor.visitOutStatement(this, arg);
     }
 }
 
@@ -65,7 +65,7 @@ export class AssStatement extends Statement {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitAssStatement(this, arg);
+        return visitor.visitAssStatement(this, arg);
     }
 }
 
@@ -75,7 +75,7 @@ export class RetStatement extends Statement {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitRetStatement(this, arg);
+        return visitor.visitRetStatement(this, arg);
     }
 }
 
@@ -85,6 +85,6 @@ export class BreakStatement extends Statement {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitBreakStatement(this, arg);
+        return visitor.visitBreakStatement(this, arg);
     }
 }

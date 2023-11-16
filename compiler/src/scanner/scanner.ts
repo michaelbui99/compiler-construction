@@ -79,7 +79,7 @@ export class Scanner {
             //     this.isDigit(this.currentChar)) &&
             //     !this.isAtEnd()
             // ) {
-            //     
+            //
             // }
             this.consumeCurrentChar();
             return TokenKind.INDEX;

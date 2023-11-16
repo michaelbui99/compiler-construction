@@ -318,7 +318,7 @@ export class Parser {
     }
 
     private parseExpression2(): ExpressionResult {
-        if (this.currentTerminal.isBooleanOperator()) {
+        if (this.currentTerminal.isUnaryOperand()) {
             const operator = this.parseOperator();
             const expression = this.parsePrimaryExpression();
             return new UnaryExpression(operator, expression);

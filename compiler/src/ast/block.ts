@@ -8,6 +8,6 @@ export class Block extends AST {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitBlock(this, arg);
+        return visitor.visitBlock(this, arg);
     }
 }
