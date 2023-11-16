@@ -43,4 +43,19 @@ describe("Checker tests", () => {
 
         expect(() => checker.visitProgram(ast, undefined)).not.toThrowError();
     });
+
+    test("Function cannot be used as argument to another function", () => {
+        const source = `
+            fun myFunc a int thn ret out a% end
+            fun identity a int thn ret a% end
+
+            myFunc identity%
+        `;
+        const scanner = new Scanner(source);
+        const parser = new Parser(scanner);
+        const ast = parser.parseProgram();
+        const checker = new Checker();
+
+        expect(() => checker.visitProgram(ast, undefined)).toThrowError();
+    });
 });

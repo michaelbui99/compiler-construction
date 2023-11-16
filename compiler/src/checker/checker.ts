@@ -226,12 +226,14 @@ export class Checker implements IVisitor {
     visitCallExpression(node: CallExpression, args: any) {
         const id = node.identifier.accept(this, args);
 
+        // Check if function has been declared
         const existingDeclaration = this.idTable.retrieveDeclaration(id);
         if (!existingDeclaration) {
             throw new CompilerError(
                 `No function of name ${id} has been declared`
             );
         }
+        // Check if identifier being call is a function
         if (!(existingDeclaration instanceof FunctionDeclaration)) {
             throw new CompilerError(`Identifier ${id} is not a function`);
         }
@@ -239,6 +241,7 @@ export class Checker implements IVisitor {
         const callArgumentCount = node.args.expressions.length;
         const definedArgumentCount = existingDeclaration.params.length;
 
+        // Check if call argument count is equal to arugment count in function definition.
         if (callArgumentCount != definedArgumentCount) {
             throw new CompilerError(
                 `Function ${id} expected ${definedArgumentCount} arguments, but was passed ${callArgumentCount}`
