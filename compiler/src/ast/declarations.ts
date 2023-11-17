@@ -46,6 +46,6 @@ export class FunctionDeclaration extends Declaration {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitFunctionDeclaration(this, arg);
+        return visitor.visitFunctionDeclaration(this, arg);
     }
 }

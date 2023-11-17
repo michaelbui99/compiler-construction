@@ -18,7 +18,6 @@ export class IdentificationTable {
 
     declare(id: string, declaration: Declaration): void {
         const entry = this.find(id);
-
         if (entry && entry.scopeLevel === this.scopeLevel) {
             throw new CompilerError(
                 `Id ${id} has already been declared in current scope level of ${this.scopeLevel}`

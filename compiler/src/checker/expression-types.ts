@@ -1,8 +1,8 @@
 export enum ExpressionTypeKind {
-    INTEGER,
-    BOOLEAN,
-    ARRAY,
-    STRING,
+    INTEGER = "INTEGER",
+    BOOLEAN = "BOOLEAN",
+    ARRAY = "ARRAY",
+    STRING = "STRING",
 }
 
 export type ExpressionType = {

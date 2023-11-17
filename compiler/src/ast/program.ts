@@ -8,6 +8,6 @@ export class Program extends AST {
     }
 
     accept(visitor: IVisitor, arg: any): void {
-        visitor.visitProgram(this, arg);
+        return visitor.visitProgram(this, arg);
     }
 }

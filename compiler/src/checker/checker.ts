@@ -88,8 +88,44 @@ export class Checker implements IVisitor {
         return null;
     }
     visitAssStatement(node: AssStatement, args: any) {
-        node.identifier.accept(this, args);
-        node.expression.accept(this, args);
+        const id = node.identifier.accept(this, args);
+        const declaration = this.idTable.retrieveDeclaration(id);
+        if (!declaration) {
+            throw new CompilerError(
+                `Cannot reassign ${id} as it has never been declared`
+            );
+        }
+
+        // TODO: Lets talk about using 'ass' for functions. Is this allowed? if not lets put it in semantics
+        if (!(declaration instanceof VariableDeclaration)) {
+            throw new CompilerError(`Identifier ${id} is not a variable`);
+        }
+
+        const assignToType = node.expression.accept(
+            this,
+            args
+        ) as ExpressionType;
+
+        if (
+            declaration.expressionList &&
+            assignToType.kind !== ExpressionTypeKind.ARRAY
+        ) {
+            throw new CompilerError(
+                `Cannot reassign identifier ${id} with type ARRAY to type ${assignToType.kind}`
+            );
+        } else if (declaration.expression) {
+            const declaredType = declaration.expression.accept(
+                this,
+                args
+            ) as ExpressionType;
+            if (declaredType.kind !== assignToType.kind) {
+                throw new CompilerError(
+                    `Cannot reassign identifier ${id} with type ${declaredType.kind} to value of type ${assignToType.kind}`
+                );
+            }
+        }
+
+        // TODO: Handle checking reassigning values for arrays
         node.index?.forEach((idx) => idx.accept(this, args));
 
         return null;
@@ -110,6 +146,26 @@ export class Checker implements IVisitor {
         const id = node.identifier.accept(this, args);
         this.idTable.declare(id, node);
         this.idTable.openScope();
+        node.params.forEach((param, idx) => {
+            // Params of function are treated as variables inside the function
+            let type = node.paramTypes[idx];
+            let expression;
+            // We need this so the check can perform type checking in call expression
+            // TODO: Figure out how we do type checking. Maybe another visitor. Probably ask teacher.
+            switch (type.spelling) {
+                case "int":
+                    expression = new IntLiteralExpression(
+                        new IntegerLiteral("0")
+                    );
+                    break;
+                default:
+                    break;
+            }
+            this.idTable.declare(
+                param.spelling,
+                new VariableDeclaration(param)
+            );
+        });
         node.params.forEach((param) => param.accept(this, args));
         node.paramTypes.forEach((paramType) => paramType.accept(this, args));
         node.statments.accept(this, args);
@@ -226,19 +282,23 @@ export class Checker implements IVisitor {
     visitCallExpression(node: CallExpression, args: any) {
         const id = node.identifier.accept(this, args);
 
+        // Check if function has been declared
         const existingDeclaration = this.idTable.retrieveDeclaration(id);
         if (!existingDeclaration) {
             throw new CompilerError(
                 `No function of name ${id} has been declared`
             );
         }
+        // Check if identifier being call is a function
         if (!(existingDeclaration instanceof FunctionDeclaration)) {
             throw new CompilerError(`Identifier ${id} is not a function`);
         }
 
+        // TODO: We need to declare the function params in scope here
         const callArgumentCount = node.args.expressions.length;
         const definedArgumentCount = existingDeclaration.params.length;
 
+        // Check if call argument count is equal to arugment count in function definition.
         if (callArgumentCount != definedArgumentCount) {
             throw new CompilerError(
                 `Function ${id} expected ${definedArgumentCount} arguments, but was passed ${callArgumentCount}`
