@@ -7,5 +7,6 @@ export enum ExpressionTypeKind {
 
 export type ExpressionType = {
     kind: ExpressionTypeKind;
+    depth: number | undefined;
     spelling: string;
 };

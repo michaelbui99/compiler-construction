@@ -327,7 +327,10 @@ export class Parser {
     }
 
     private parseGetDeclaration(): GetDelcaration {
-        throw "";
+        this.accept(TokenKind.GET);
+        const varIdentifier = new Identifier(this.accept(TokenKind.IDENTIFIER).spelling);
+        this.accept(TokenKind.PERCENT);
+        return new GetDelcaration(varIdentifier);
     }
     private parseFunctionDelcaration(): FunctionDeclaration {
         this.accept(TokenKind.FUNCTION);
@@ -435,7 +438,6 @@ export class Parser {
         return (
             this.currentTerminal.kind === TokenKind.INTEGER_LITTERAL ||
             this.currentTerminal.kind === TokenKind.STRING_LITTERAL ||
-            this.currentTerminal.kind === TokenKind.OPERATOR ||
             this.currentTerminal.kind === TokenKind.RUN ||
             this.currentTerminal.kind === TokenKind.IDENTIFIER ||
             this.currentTerminal.kind === TokenKind.BOOLEAN_LITTERAL

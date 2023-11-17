@@ -22,4 +22,4 @@ name = variable | function | array
 -   `len` can be used on integers, booleans and arrays. `len` will return the amount of elements in the array and returns 1 for integers and booleans.
 -   Expressions evaluated in `for` and `iff` statements has to return a boolean.
 
--   `get` delcarations will assign an array of integers to the specified name of the declaration. Each integer in the array represents the ASCII representation of a character.
+-   `get` assigns a new value to the variable. It reads string is the variable is of type string, it reads integer if the variable is of type integer. It is not possible to read into an array.

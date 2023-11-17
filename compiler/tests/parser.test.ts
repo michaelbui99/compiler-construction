@@ -18,6 +18,7 @@ import { Parser } from "../src/ast/parser";
 import { Program } from "../src/ast/program";
 import {
     AssStatement,
+    IndexType,
     OutStatement,
     RetStatement,
     Statements,
@@ -229,5 +230,34 @@ describe("Scan tokens", () => {
 
         const program = parser.parseProgram();
         expect(program).toEqual(new Program(new Block(new Statements([]))));
+    });
+
+    test("try to make a function", () => {
+        const source = "fun void a int thn get a % end";
+        const scanner = new Scanner(source);
+        const parser = new Parser(scanner);
+        parser.parseProgram();
+    });
+
+
+    test("integers are not indexable", () =>{
+        const source = "ass a # 1 8 %";
+        const scanner = new Scanner(source);
+        const parser = new Parser(scanner);
+        const program = parser.parseProgram();
+
+        expect(program).toEqual(
+            new Program(
+                new Block(
+                    new Statements([
+                        new AssStatement(
+                            new Identifier("a"),
+                            new IntLiteralExpression(new IntegerLiteral("8")),
+                            [new IntegerLiteral("1") as IndexType]
+                        )
+                    ])
+                )
+            )
+        )
     });
 });

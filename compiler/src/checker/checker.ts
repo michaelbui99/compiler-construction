@@ -96,7 +96,6 @@ export class Checker implements IVisitor {
             );
         }
 
-        // TODO: Lets talk about using 'ass' for functions. Is this allowed? if not lets put it in semantics
         if (!(declaration instanceof VariableDeclaration)) {
             throw new CompilerError(`Identifier ${id} is not a variable`);
         }
@@ -106,23 +105,39 @@ export class Checker implements IVisitor {
             args
         ) as ExpressionType;
 
-        if (
-            declaration.expressionList &&
-            assignToType.kind !== ExpressionTypeKind.ARRAY
-        ) {
-            throw new CompilerError(
-                `Cannot reassign identifier ${id} with type ARRAY to type ${assignToType.kind}`
-            );
-        } else if (declaration.expression) {
-            const declaredType = declaration.expression.accept(
+        let variableType : ExpressionType | undefined = undefined;
+        if (declaration.expressionList){
+            const definedIndexes : ExpressionType = declaration.expressionList.expressions[0].accept(this,args);
+            const askedIndexes = node.index?.length ?? 0;
+            const finalIndexes = (definedIndexes.depth ?? 0) + 1 - askedIndexes;
+            variableType = {
+                kind: (finalIndexes === 0) ? ExpressionTypeKind.INTEGER : ExpressionTypeKind.ARRAY,
+                depth: finalIndexes,
+            } as ExpressionType;
+        }else if (declaration.indexList){
+            const definedIndexes = declaration.indexList.length;
+            const askedIndexes = node.index?.length ?? 0;
+            const finalIndexes = definedIndexes - askedIndexes;
+            variableType = {
+                kind: (finalIndexes === 0) ? ExpressionTypeKind.INTEGER : ExpressionTypeKind.ARRAY,
+                depth: finalIndexes,
+            } as ExpressionType;
+        } else {
+            variableType = declaration.expression?.accept(
                 this,
                 args
-            ) as ExpressionType;
-            if (declaredType.kind !== assignToType.kind) {
-                throw new CompilerError(
-                    `Cannot reassign identifier ${id} with type ${declaredType.kind} to value of type ${assignToType.kind}`
-                );
-            }
+            )
+            if (variableType === undefined) throw new CompilerError("internal error");
+            if (variableType.depth == undefined) {variableType.depth = 0;}
+            variableType.depth -= (node.index?.length ?? 0)
+        }
+        
+        if (assignToType.kind !== variableType?.kind){
+            throw new CompilerError(`Assignment of type ${assignToType.kind} not possible to type ${variableType?.kind}`);
+        }
+
+        if ((assignToType.depth ?? 0) != (variableType?.depth ?? 0)){
+            throw new CompilerError("Depth of variable does not correspont to indexes")
         }
 
         // TODO: Handle checking reassigning values for arrays
@@ -158,6 +173,9 @@ export class Checker implements IVisitor {
                         new IntegerLiteral("0")
                     );
                     break;
+                case "bol":
+                    expression = new BooleanLiteralExpression(new BooleanLiteral("tru"));
+                    break;
                 default:
                     break;
             }
@@ -178,7 +196,23 @@ export class Checker implements IVisitor {
         const id = node.identifier.accept(this, args);
         this.idTable.declare(id, node);
         node.expression?.accept(this, args);
-        node.expressionList?.accept(this, args);
+        if (node.expressionList !== undefined){
+            let firstType : ExpressionType = node.expressionList.expressions[0].accept(this,args);
+            node.expressionList.expressions.forEach(expression => {
+                let type : ExpressionType = expression.accept(this,args);
+                if (firstType.kind !== type.kind){
+                    throw new CompilerError("all expressions of array has to have the same type");
+                }
+                if (type.kind !== ExpressionTypeKind.ARRAY &&
+                    type.kind !== ExpressionTypeKind.INTEGER){
+                        throw new CompilerError("Arrays can have elements of type array or integer only.")
+                    }
+            })
+            node.expressionList?.accept(this, args);
+        } else if (node.indexList !== undefined){
+            return null;
+        }
+        
         return null;
     }
     visitIntegerLiteralExpression(node: IntLiteralExpression, args: any) {
@@ -310,7 +344,7 @@ export class Checker implements IVisitor {
                 this,
                 null
             );
-            const definedType: ExpressionType = existingDeclaration.params[
+            const definedType: ExpressionType = existingDeclaration.paramTypes[
                 i
             ].accept(this, null);
 
@@ -325,25 +359,11 @@ export class Checker implements IVisitor {
         return null;
     }
     visitExpressionList(node: ExpressionList, args: any) {
-        const expectedType: ExpressionType = node.expressions[0].accept(
-            this,
-            args
-        );
         const types = node.expressions.map((expression) =>
             expression.accept(this, args)
         );
 
-        const isValidArray = types.every(
-            (type) => type.kind === expectedType.kind
-        );
-
-        if (!isValidArray) {
-            throw new CompilerError(
-                "All elements in array does not have the same type"
-            );
-        }
-
-        return null;
+        return types as ExpressionType[];
     }
     visitArrayExpression(node: ArrayExperession, args: any) {
         const id = node.identifier.accept(this, args);
@@ -360,10 +380,12 @@ export class Checker implements IVisitor {
             throw new CompilerError(`No array with id ${id} has been declared`);
         }
 
-        if (declaration.expressionList === undefined) {
+        if (declaration.expressionList === undefined &&
+            declaration.indexList === undefined) {
             throw new CompilerError(`Identifier ${id} is not an array`);
         }
 
+        // ass myArr #1 #1 5 %
         node.indexes.forEach((index) => {
             const type = index.accept(this, args);
             if (typeof type === "string") {
@@ -418,6 +440,24 @@ export class Checker implements IVisitor {
         return new Token(TokenKind.OPERATOR, node.spelling);
     }
     visitType(node: Type, args: any) {
-        return null;
+        switch (node.spelling){
+            case "bol":
+                return {
+                    kind: ExpressionTypeKind.BOOLEAN
+                } as ExpressionType;
+            case "int": 
+                return {
+                    kind: ExpressionTypeKind.INTEGER
+                } as ExpressionType;
+            case "str":
+                return {
+                    kind: ExpressionTypeKind.STRING
+                } as ExpressionType;
+            case "arr":
+                return {
+                    kind: ExpressionTypeKind.ARRAY
+                } as ExpressionType;
+            default: throw new CompilerError("unknown type");
+        }
     }
 }
