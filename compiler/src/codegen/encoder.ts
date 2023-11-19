@@ -31,6 +31,7 @@ import {
 } from "../ast/statements";
 import { Type } from "../ast/types";
 import { IVisitor } from "../ast/visitor";
+import { Instruction } from "./tam/Instruction";
 import { Machine } from "./tam/Machine";
 
 export class Encoder implements IVisitor {
@@ -125,4 +126,28 @@ export class Encoder implements IVisitor {
     visitType(node: Type, args: any) {
         throw new Error("Method not implemented.");
     }
+
+    private emit(op: number, n: number, r: number, d: number) {
+        if (n > 255) {
+            console.log(`Operand too long`);
+        }
+
+        const instruction = new Instruction();
+        instruction.op = op;
+        instruction.n = n;
+        instruction.r = r;
+        instruction.d = d;
+
+        if (this.nextAddress >= Machine.PB) {
+            console.log("Program is too large");
+        } else {
+            Machine.code[this.nextAddress++] = instruction;
+        }
+    }
+
+    private patch(address: number, d: number) {
+        Machine.code[address].d = d;
+    }
+
+    private displayRegister();
 }
