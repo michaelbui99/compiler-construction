@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { Block } from "../ast/block";
 import {
     GetDelcaration,
@@ -31,6 +33,7 @@ import {
 } from "../ast/statements";
 import { Type } from "../ast/types";
 import { IVisitor } from "../ast/visitor";
+import { Address } from "./address";
 import { Instruction } from "./tam/Instruction";
 import { Machine } from "./tam/Machine";
 
@@ -43,13 +46,18 @@ export class Encoder implements IVisitor {
     }
 
     visitProgram(node: Program, args: any) {
-        throw new Error("Method not implemented.");
+        this.currentLevel = 0;
+        node.block.accept(this, Address.newDefault());
+        this.emit(Machine.HALTop, 0, 0, 0);
+        return null;
     }
+
     visitBlock(node: Block, args: any) {
         throw new Error("Method not implemented.");
     }
     visitStatements(node: Statements, args: any) {
-        throw new Error("Method not implemented.");
+        node.statements.forEach((statement) => statement.accept(this, null));
+        return null;
     }
     visitExpressionResultStatement(node: ExpressionResult, args: any) {
         throw new Error("Method not implemented.");
@@ -149,5 +157,28 @@ export class Encoder implements IVisitor {
         Machine.code[address].d = d;
     }
 
-    private displayRegister();
+    private displayRegister(currentLevel: number, entityLevel: number) {
+        if (entityLevel === 0) {
+            return Machine.SBr;
+        } else if (currentLevel - entityLevel <= 6) {
+            return Machine.LBr + currentLevel - entityLevel;
+        } else {
+            console.log("Accessing across to many levels");
+            return Machine.L6r;
+        }
+    }
+
+    private saveTargetProgram(fileName: string) {
+        try {
+            const writeStream = fs.createWriteStream(path.resolve(fileName));
+
+            for (let i = Machine.CB; i < this.nextAddress; i++) {
+                Machine.code[i].write(writeStream);
+            }
+
+            writeStream.close();
+        } catch (err) {
+            console.log(`Failed to write program to ${path.resolve(fileName)}`);
+        }
+    }
 }
