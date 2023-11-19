@@ -19,7 +19,6 @@ export class Instruction {
         buffer.writeInt32BE(this.r, 4);
         buffer.writeInt32BE(this.n, 8);
         buffer.writeInt32BE(this.d, 12);
-
         output.write(buffer);
     }
 }
