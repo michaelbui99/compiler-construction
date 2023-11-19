@@ -189,7 +189,7 @@ export class Parser {
                 const identifier = new Identifier(identifierToken.spelling);
                 if (this.isExpressionToken()) {
                     const expressionList = this.parseExpressionList();
-                    this.accept(TokenKind.PERCENT); // TODO: do we need this???
+                    // this.accept(TokenKind.PERCENT); // TODO: do we need this???
                     return new CallExpression(identifier, expressionList);
                     // @ts-ignore
                 } else if (this.currentTerminal.kind === TokenKind.INDEX) {
@@ -328,7 +328,9 @@ export class Parser {
 
     private parseGetDeclaration(): GetDelcaration {
         this.accept(TokenKind.GET);
-        const varIdentifier = new Identifier(this.accept(TokenKind.IDENTIFIER).spelling);
+        const varIdentifier = new Identifier(
+            this.accept(TokenKind.IDENTIFIER).spelling
+        );
         this.accept(TokenKind.PERCENT);
         return new GetDelcaration(varIdentifier);
     }
