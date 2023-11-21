@@ -13,6 +13,10 @@ Run\[[Program]]=
 > Execute\[[Block]]
 > HALT
 
+Execute\[[Block]]
+
+> Execute\[[Statements]]
+
 Execute\[[Statements]] =
 
 > Execute\[[Statement1]]
@@ -26,7 +30,7 @@ Execute\[[Expression]] =
 > Evaluate\[[Expression]]
 > POP 1
 
-Execute\[[**iff** ExpressionResult **thn** $Statements_1$ else $Statements_2$]] =
+Execute\[[**iff** ExpressionResult **thn** $Statements_1$ **els** $Statements_2$]] =
 
 > Evaluate\[[ExpressionResult]]
 > JUMPIF (0) f
@@ -43,6 +47,55 @@ Execute\[[**iff** ExpressionResult **thn** Statements **end**]]=
 > JUMP t
 > d:
 
+Execute\[[**for** ExpressionResult **thn** Statements **end**]]=
+
+> t: Evalute\[[ExpressionResult]]
+> JUMPIF (0) d
+> Execute\[[Statements]]
+> JUMP t
+> d:
+
+Execute\[[**ass** **Identifier** (Ø | Index) ExpressionResult **%**]] =
+
+> Evaluate\[[ExpressionResult]]
+> STORE varoffset\[varreg]
+> LOAD varoffset\[varreg]
+
+Execute\[[**ret** ExpressionResult **%**]] =
+
+> RETURN (1) paramsize
+
 Execute\[[**brk**]]=
 
 > JUMP d
+
+Execute\[[**get** **Identifier** **%**]] =
+
+<!-- We handle the int case first to simplify everything -->
+
+> getint varoffset\[varreg]
+
+Elaborate\[[**fun** **Identifier** (**Identifier** (**Type** | **arr**))\* **thn** Statements **end**]] =
+
+> Elaborate\[[**Identifier1**]]
+> Elaborate\[[**Identifier2**]]
+> Elaborate\[[**Identifier3**]]
+> ...
+> Elaborate\[[**IdentifierN**]]
+
+> Execute\[[Statements]]
+> RETURN (1) paramsize
+
+Elaborate\[[**let** **Identifier** ExpressionResult **%**]]
+
+> Evaluate\[[ExpressionResult]]
+> STORE varoffset[varreg]
+
+Elaborate\[[**let** **Identifier** **arr** Index **%**]]
+
+> PUSH
+> STORE varoffset[varreg]
+
+Evaluate \[[**Identifier**]] =
+
+> LOAD varoffset\[varreg]

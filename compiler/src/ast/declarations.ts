@@ -1,3 +1,4 @@
+import { Address } from "../codegen/address";
 import { AST } from "./ast";
 import { ExpressionList, ExpressionResult } from "./expression";
 import { Identifier } from "./identifier";
@@ -16,7 +17,8 @@ export class VariableDeclaration extends Declaration {
         public identifier: Identifier,
         public expression?: ExpressionResult,
         public expressionList?: ExpressionList,
-        public indexList?: IndexType[]
+        public indexList?: IndexType[],
+        public address?: Address
     ) {
         super(identifier);
     }
@@ -26,6 +28,7 @@ export class VariableDeclaration extends Declaration {
     }
 }
 
+// NOTE: No longer a declaration, must read to an existing variable.
 export class GetDelcaration extends Declaration {
     constructor(public identifier: Identifier) {
         super(identifier);
@@ -40,7 +43,8 @@ export class FunctionDeclaration extends Declaration {
         public identifier: Identifier,
         public params: Identifier[],
         public paramTypes: Type[],
-        public statments: Statements
+        public statments: Statements,
+        public address?: Address
     ) {
         super(identifier);
     }
