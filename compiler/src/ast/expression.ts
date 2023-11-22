@@ -1,11 +1,20 @@
+import {
+    ExpressionType,
+    ExpressionTypeKind,
+} from "../checker/expression-types";
 import { AST } from "./ast";
+import { FunctionDeclaration, VariableDeclaration } from "./declarations";
 import { Identifier } from "./identifier";
 import { BooleanLiteral, IntegerLiteral, StringLiteral } from "./literals";
 import { Operator } from "./operator";
 import { IndexType } from "./statements";
 import { IVisitor } from "./visitor";
 
-export abstract class ExpressionResult extends AST {}
+export abstract class ExpressionResult extends AST {
+    constructor(public type?: ExpressionType) {
+        super();
+    }
+}
 
 export class ExpressionList extends ExpressionResult {
     constructor(public expressions: ExpressionResult[] = []) {
@@ -24,7 +33,7 @@ export class BinaryExpression extends ExpressionResult {
         public operator: Operator,
         public operand2: ExpressionResult
     ) {
-        super();
+        super(operand1.type);
     }
 
     accept(visitor: IVisitor, arg: any): void {
@@ -34,7 +43,7 @@ export class BinaryExpression extends ExpressionResult {
 
 export class UnaryExpression extends ExpressionResult {
     constructor(public operator: Operator, public operand: ExpressionResult) {
-        super();
+        super(operand.type);
     }
 
     accept(visitor: IVisitor, arg: any): void {
@@ -44,7 +53,7 @@ export class UnaryExpression extends ExpressionResult {
 
 export class IntLiteralExpression extends ExpressionResult {
     constructor(public intLiteral: IntegerLiteral) {
-        super();
+        super({ depth: 0, kind: ExpressionTypeKind.INTEGER, spelling: "int" });
     }
 
     accept(visitor: IVisitor, arg: any): void {
@@ -54,7 +63,7 @@ export class IntLiteralExpression extends ExpressionResult {
 
 export class StringLiteralExpression extends ExpressionResult {
     constructor(public stringLitteral: StringLiteral) {
-        super();
+        super({ depth: 0, kind: ExpressionTypeKind.STRING, spelling: "str" });
     }
 
     accept(visitor: IVisitor, arg: any): void {
@@ -64,7 +73,7 @@ export class StringLiteralExpression extends ExpressionResult {
 
 export class BooleanLiteralExpression extends ExpressionResult {
     constructor(public booleanLiteral: BooleanLiteral) {
-        super();
+        super({ depth: 0, kind: ExpressionTypeKind.BOOLEAN, spelling: "bol" });
     }
 
     accept(visitor: IVisitor, arg: any): void {
@@ -73,8 +82,12 @@ export class BooleanLiteralExpression extends ExpressionResult {
 }
 
 export class CallExpression extends ExpressionResult {
-    constructor(public identifier: Identifier, public args: ExpressionList) {
-        super();
+    constructor(
+        public identifier: Identifier,
+        public args: ExpressionList,
+        public declaration?: FunctionDeclaration
+    ) {
+        super(declaration?.returnType);
     }
 
     accept(visitor: IVisitor, arg: any): void {
@@ -83,8 +96,11 @@ export class CallExpression extends ExpressionResult {
 }
 
 export class VariableExpression extends ExpressionResult {
-    constructor(public identifier: Identifier) {
-        super();
+    constructor(
+        public identifier: Identifier,
+        public declaration?: VariableDeclaration
+    ) {
+        super(declaration?.type);
     }
 
     accept(visitor: IVisitor, arg: any): void {

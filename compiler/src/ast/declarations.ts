@@ -1,3 +1,8 @@
+import {
+    ExpressionType,
+    ExpressionTypeKind,
+} from "../checker/expression-types";
+import { Address } from "../codegen/address";
 import { AST } from "./ast";
 import { ExpressionList, ExpressionResult } from "./expression";
 import { Identifier } from "./identifier";
@@ -16,7 +21,9 @@ export class VariableDeclaration extends Declaration {
         public identifier: Identifier,
         public expression?: ExpressionResult,
         public expressionList?: ExpressionList,
-        public indexList?: IndexType[]
+        public indexList?: IndexType[],
+        public address?: Address,
+        public type?: ExpressionType
     ) {
         super(identifier);
     }
@@ -40,7 +47,9 @@ export class FunctionDeclaration extends Declaration {
         public identifier: Identifier,
         public params: Identifier[],
         public paramTypes: Type[],
-        public statments: Statements
+        public statments: Statements,
+        public address?: Address,
+        public returnType?: ExpressionType
     ) {
         super(identifier);
     }
