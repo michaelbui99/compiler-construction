@@ -68,7 +68,7 @@ export class AssStatement extends Statement {
         public identifier: Identifier,
         public expression: ExpressionResult,
         public index: IndexType[] | undefined = undefined,
-        public declaration?: VariableDeclaration;
+        public declaration?: VariableDeclaration
     ) {
         super();
     }
