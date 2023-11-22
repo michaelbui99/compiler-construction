@@ -74,6 +74,13 @@ Execute\[[**out** ExpressionResult **%**]]=
 Execute\[[**ass** **Identifier** (Ø | Index) ExpressionResult **%**]] =
 
 > Evaluate\[[ExpressionResult]]
+> 
+> // do this for each index variable (if indexes for 2 dimensional make it twice)
+> LOADA varoffset\[varreg]
+> LOAD (1) varoffset\[index]
+> CALL add
+> 
+> 
 > STORE varoffset\[varreg]
 > LOAD varoffset\[varreg]
 

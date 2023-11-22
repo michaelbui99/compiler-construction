@@ -34,15 +34,21 @@ import {
 import { Type } from "../ast/types";
 import { IVisitor } from "../ast/visitor";
 import { Address } from "./address";
-import { Instruction } from "./tam/Instruction";
-import { Machine } from "./tam/Machine";
+import { Instruction } from "./tam/instruction";
+import { Machine } from "./tam/machine";
 
 export class Encoder implements IVisitor {
     private nextAddress: number = Machine.CB;
     private currentLevel: number = 0;
 
-    ecnode(program: Program) {
+    ecnode(program: Program, toFile: string) {
+        Machine.code = new Array(1024);
         program.accept(this, null);
+
+        console.log(toFile);
+        console.log(Machine.code);
+        // did not found out how to print it into file
+        //writeFile(toFile, JSON.stringify(Machine.code) + 'hallo', 'utf-8', (err)=>{});
     }
 
     visitProgram(node: Program, args: any) {
@@ -53,13 +59,15 @@ export class Encoder implements IVisitor {
     }
 
     visitBlock(node: Block, args: any) {
-        throw new Error("Method not implemented.");
+        node.statements.accept(this, args);
+        return null;
     }
     visitStatements(node: Statements, args: any) {
-        node.statements.forEach((statement) => statement.accept(this, null));
+        node.statements.forEach((statement) => statement.accept(this, args));
         return null;
     }
     visitExpressionResultStatement(node: ExpressionResult, args: any) {
+        // why is it not going here ever??
         throw new Error("Method not implemented.");
     }
     visitIffStatement(node: IffStatement, args: any) {
@@ -69,7 +77,10 @@ export class Encoder implements IVisitor {
         throw new Error("Method not implemented.");
     }
     visitOutStatement(node: OutStatement, args: any) {
-        throw new Error("Method not implemented.");
+        const exprs = node.expression.accept(this,args);
+        this.emit(Machine.CALLop,0,Machine.PBr,Machine.putintDisplacement);
+        this.emit(Machine.CALLop,0,Machine.PBr,Machine.puteolDisplacement);
+        //throw new Error("Method not implemented.");
     }
     visitAssStatement(node: AssStatement, args: any) {
         throw new Error("Method not implemented.");
@@ -87,10 +98,20 @@ export class Encoder implements IVisitor {
         throw new Error("Method not implemented.");
     }
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
-        throw new Error("Method not implemented.");
+        if (node.expression){
+            node.address = Address.fromAdressAndIncrement(args as Address,1);
+            node.expression?.accept(this,args);
+            this.emit(Machine.STOREop,
+                1,
+                this.displayRegister((args as Address).level,node.address.level),
+                node.address.displacement);
+        } else {
+            throw new Error("Method not implemented.");
+        }
     }
     visitIntegerLiteralExpression(node: IntLiteralExpression, args: any) {
-        throw new Error("Method not implemented.");
+        this.emit(Machine.LOADLop, 0, 0, node.intLiteral.accept(this,args));
+        return null;
     }
     visitStringLiteralExpression(node: StringLiteralExpression, args: any) {
         throw new Error("Method not implemented.");
@@ -105,7 +126,15 @@ export class Encoder implements IVisitor {
         throw new Error("Method not implemented.");
     }
     visitVariableExpression(node: VariableExpression, args: any) {
-        throw new Error("Method not implemented.");
+        const varAddress = node.varDec?.address;
+        if (varAddress == undefined){
+            return null; // this should be already checked by checker
+        }
+        this.emit(Machine.LOADop,
+            1,
+            this.displayRegister((args as Address).level,varAddress?.level),
+            varAddress?.displacement);
+        // not sure if we don't want expression to return something like type
     }
     visitCallExpression(node: CallExpression, args: any) {
         throw new Error("Method not implemented.");
@@ -120,7 +149,7 @@ export class Encoder implements IVisitor {
         throw new Error("Method not implemented.");
     }
     visitIntegerLiteral(node: IntegerLiteral, args: any) {
-        throw new Error("Method not implemented.");
+        return parseInt(node.spelling);
     }
     visitBooleanLiteral(node: BooleanLiteral, args: any) {
         throw new Error("Method not implemented.");

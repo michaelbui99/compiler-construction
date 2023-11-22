@@ -1,4 +1,5 @@
 import { AST } from "./ast";
+import { VariableDeclaration } from "./declarations";
 import { Identifier } from "./identifier";
 import { BooleanLiteral, IntegerLiteral, StringLiteral } from "./literals";
 import { Operator } from "./operator";
@@ -83,6 +84,7 @@ export class CallExpression extends ExpressionResult {
 }
 
 export class VariableExpression extends ExpressionResult {
+    public varDec?: VariableDeclaration;
     constructor(public identifier: Identifier) {
         super();
     }
