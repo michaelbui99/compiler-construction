@@ -45,26 +45,29 @@ import { AllocationTracker } from "./allocation-tracker";
 export class Encoder implements IVisitor {
     // Initialize at the CB / Code Base.
     private nextAddress: number = Machine.CB;
-    private currentLevel: number = 0;
+    public currentLevel: number = 0;
     private allocationTracker = new AllocationTracker();
 
-    ecnode(program: Program) {
+    ecnode(program: Program, toFile?: string) {
+        Machine.code = new Array(1024);
         program.accept(this, null);
+        console.log(toFile);
+        console.log(Machine.code);
     }
 
     visitProgram(node: Program, args: any) {
-        this.currentLevel = 0;
+        this.allocationTracker.currentLevel = 0;
         node.block.accept(this, Address.newDefault());
         this.emit(Machine.HALTop, 0, 0, 0);
         return null;
     }
 
     visitBlock(node: Block, args: any) {
-        node.statements.accept(this, null);
-        throw new Error("Method not implemented.");
+        node.statements.accept(this, args);
+        return null;
     }
     visitStatements(node: Statements, args: any) {
-        node.statements.forEach((statement) => statement.accept(this, null));
+        node.statements.forEach((statement) => statement.accept(this, args));
         return null;
     }
     visitExpressionResultStatement(node: ExpressionResult, args: any) {
@@ -117,7 +120,9 @@ export class Encoder implements IVisitor {
     }
 
     visitOutStatement(node: OutStatement, args: any) {
-        throw new Error("Method not implemented");
+        const exprs = node.expression.accept(this, args);
+        this.emit(Machine.CALLop, 0, Machine.PBr, Machine.putintDisplacement);
+        this.emit(Machine.CALLop, 0, Machine.PBr, Machine.puteolDisplacement);
     }
 
     visitAssStatement(node: AssStatement, args: any) {
@@ -125,7 +130,10 @@ export class Encoder implements IVisitor {
         const pushValueToStack = true;
         const returnSize = node.expression.accept(this, pushValueToStack);
 
-        const register = this.displayRegister(this.currentLevel, address.level);
+        const register = this.displayRegister(
+            this.allocationTracker.currentLevel,
+            address.level
+        );
         this.emit(Machine.STOREop, returnSize, register, address.displacement);
 
         return undefined;
@@ -156,16 +164,24 @@ export class Encoder implements IVisitor {
         switch (type.kind) {
             case ExpressionTypeKind.BOOLEAN:
             case ExpressionTypeKind.INTEGER:
-                size = 1;
+                size = node.expression?.accept(this, args);
+                break;
             case ExpressionTypeKind.STRING:
-                size = node.expression?.accept(this, null);
+                size = node.expression?.accept(this, args);
+                break;
         }
 
         const nextDisplacement = this.allocationTracker.allocate(
             node.identifier.spelling,
             node.type
         );
-        if (this.currentLevel == 0) {
+
+        node.address = new Address(
+            this.allocationTracker.currentLevel,
+            nextDisplacement
+        );
+
+        if (this.allocationTracker.currentLevel == 0) {
             // Global variable
             this.emit(Machine.STOREop, size, Machine.SBr, nextDisplacement);
         } else {
@@ -176,11 +192,11 @@ export class Encoder implements IVisitor {
 
     visitIntegerLiteralExpression(node: IntLiteralExpression, args: any) {
         const pushValueToStack: boolean = args;
-        const integerLitteral = node.intLiteral.accept(this, null);
+        const integerLitteral = node.intLiteral.accept(this, args);
 
         if (pushValueToStack) {
             // Size of int is 1 word (16 bits).
-            this.emit(Machine.LOADop, 1, 0, integerLitteral);
+            this.emit(Machine.LOADLop, 0, 0, integerLitteral);
         }
 
         return 1;
@@ -332,7 +348,10 @@ export class Encoder implements IVisitor {
         const pushValueToStack = args;
 
         const address = node.declaration?.address!;
-        const register = this.displayRegister(this.currentLevel, address.level);
+        const register = this.displayRegister(
+            this.allocationTracker.currentLevel,
+            address.level
+        );
 
         const type = node.declaration?.type!;
 
@@ -342,11 +361,16 @@ export class Encoder implements IVisitor {
                     // TODO: Handle special case
                     break;
                 case ExpressionTypeKind.INTEGER:
-                    // TODO: Handle special case
+                    this.emit(
+                        Machine.LOADop,
+                        1,
+                        register,
+                        address.displacement
+                    );
                     break;
                 default:
                     this.emit(
-                        Machine.LOADLop,
+                        Machine.LOADop,
                         1,
                         register,
                         address.displacement

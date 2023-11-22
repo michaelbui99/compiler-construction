@@ -8,7 +8,7 @@ export type Allocation = {
 
 export class AllocationTracker {
     private nextDisplacement = 0;
-    private currentLevel = 0;
+    public currentLevel = 0;
     private allocations = new Map<number, Allocation[]>();
 
     constructor() {}
@@ -22,6 +22,9 @@ export class AllocationTracker {
     }
 
     allocate(id: string, type?: ExpressionType): number {
+        if (!this.allocations.has(this.currentLevel)) {
+            this.allocations.set(this.currentLevel, []);
+        }
         this.allocations.set(this.currentLevel, [
             ...(this.allocations.get(this.currentLevel) as Allocation[]),
             {
