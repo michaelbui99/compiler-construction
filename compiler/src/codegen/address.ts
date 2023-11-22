@@ -1,6 +1,6 @@
 export class Address {
-    level: number;
-    displacement: number;
+    public level: number;
+    public displacement: number;
 
     constructor(level: number = 0, displacement: number = 0) {
         this.level = level;

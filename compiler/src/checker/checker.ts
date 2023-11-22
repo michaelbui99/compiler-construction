@@ -297,6 +297,7 @@ export class Checker implements IVisitor {
                 `No variable of name ${id} has been declared`
             );
         }
+        node.varDec = existingDeclaration;
         if (!(existingDeclaration instanceof VariableDeclaration)) {
             throw new CompilerError(`Identifier ${id} is not a variable`);
         }
