@@ -1,4 +1,9 @@
+import {
+    ExpressionType,
+    ExpressionTypeKind,
+} from "../checker/expression-types";
 import { AST } from "./ast";
+import { VariableDeclaration } from "./declarations";
 import { ExpressionResult } from "./expression";
 import { Identifier } from "./identifier";
 import { IntegerLiteral } from "./literals";
@@ -44,7 +49,10 @@ export class ForStatement extends Statement {
 }
 
 export class OutStatement extends Statement {
-    constructor(public expression: ExpressionResult) {
+    constructor(
+        public expression: ExpressionResult,
+        public expressionType?: ExpressionType
+    ) {
         super();
     }
 
@@ -59,7 +67,8 @@ export class AssStatement extends Statement {
     constructor(
         public identifier: Identifier,
         public expression: ExpressionResult,
-        public index: IndexType[] | undefined = undefined
+        public index: IndexType[] | undefined = undefined,
+        public declaration?: VariableDeclaration
     ) {
         super();
     }
