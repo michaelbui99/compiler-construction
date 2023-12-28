@@ -256,7 +256,7 @@ export class Checker implements IVisitor {
                     );
                 }
                 if (
-                    type.kind !== ExpressionTypeKind.ARRAY &&
+                    // type.kind !== ExpressionTypeKind.ARRAY && Only allow single level integer arrays.
                     type.kind !== ExpressionTypeKind.INTEGER
                 ) {
                     throw new CompilerError(

@@ -120,7 +120,8 @@ export class Encoder implements IVisitor {
     }
 
     visitOutStatement(node: OutStatement, args: any) {
-        const exprs = node.expression.accept(this, args);
+        const pushValueToStack = true;
+        const exprs = node.expression.accept(this, pushValueToStack);
         this.emit(Machine.CALLop, 0, Machine.PBr, Machine.putintDisplacement);
         this.emit(Machine.CALLop, 0, Machine.PBr, Machine.puteolDisplacement);
     }
@@ -155,6 +156,8 @@ export class Encoder implements IVisitor {
 
     visitFunctionDeclaration(node: FunctionDeclaration, args: any) {
         // throw new Error("Method not implemented.");
+        node.address = new Address(this.currentLevel, this.nextAddress);
+        this.currentLevel++;
     }
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
@@ -444,13 +447,13 @@ export class Encoder implements IVisitor {
         }
     }
 
-    public saveTargetProgram(fileName: string) {
+    public async saveTargetProgram(fileName: string): Promise<void> {
         try {
             console.log(`Saving program to ${path.resolve(fileName)}`);
             const writeStream = fs.createWriteStream(path.resolve(fileName));
 
             for (let i = Machine.CB; i < this.nextAddress; i++) {
-                Machine.code[i].write(writeStream);
+                await Machine.code[i].write(writeStream);
             }
 
             writeStream.close();

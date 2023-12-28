@@ -5,3 +5,5 @@ fun factorial n int thn
 
     ret n mul factorial run n sub 1 end %
 end
+
+out 1%
