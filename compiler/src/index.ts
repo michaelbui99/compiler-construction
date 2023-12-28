@@ -1,12 +1,35 @@
+import fs from "fs";
+import path from "path";
+import { command, positional, string, run, option } from "cmd-ts";
 import { Parser } from "./ast/parser";
 import { Scanner } from "./scanner/scanner";
+import { exec } from "child_process";
+import { Encoder } from "./codegen/encoder";
 
-const scanner = new Scanner('let myVar "test"');
-console.log(scanner.scanAll());
+// const TAM_JAR_PATH = path.resolve(__dirname, "vm", "TAM.jar");
 
-let source = "let a 1 add 2 %";
-let scanner2 = new Scanner(source);
+const app = command({
+    args: {
+        file: positional({ type: string, displayName: "file" }),
+        out: option({
+            long: "out",
+            short: "o",
+            type: string,
+            defaultValue: () => path.resolve(process.cwd(), "program.tam"),
+        }),
+    },
+    handler: ({ file, out }) => {
+        // read the file to the screen
+        const source = fs.readFileSync(file, "utf-8");
+        const scanner = new Scanner(source);
+        const parser = new Parser(scanner);
+        const encoder = new Encoder();
 
-let parser = new Parser(scanner2);
+        const program = parser.parseProgram();
+        encoder.encode(program, out);
+    },
+    name: "treforlan",
+});
 
-parser.parseProgram();
+// parse arguments
+run(app, process.argv.slice(2));

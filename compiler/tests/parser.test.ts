@@ -7,6 +7,7 @@ import {
 import {
     ArrayExperession,
     BinaryExpression,
+    CallExpression,
     ExpressionList,
     ExpressionResult,
     IntLiteralExpression,
@@ -18,6 +19,7 @@ import { Parser } from "../src/ast/parser";
 import { Program } from "../src/ast/program";
 import {
     AssStatement,
+    IffStatement,
     IndexType,
     OutStatement,
     RetStatement,
@@ -239,8 +241,7 @@ describe("Scan tokens", () => {
         parser.parseProgram();
     });
 
-
-    test("integers are not indexable", () =>{
+    test("integers are not indexable", () => {
         const source = "ass a # 1 8 %";
         const scanner = new Scanner(source);
         const parser = new Parser(scanner);
@@ -254,10 +255,93 @@ describe("Scan tokens", () => {
                             new Identifier("a"),
                             new IntLiteralExpression(new IntegerLiteral("8")),
                             [new IntegerLiteral("1") as IndexType]
-                        )
+                        ),
                     ])
                 )
             )
-        )
+        );
+    });
+
+    test("factorial parsed correctly", () => {
+        const source = `
+            fun factorial n int thn
+                iff run n lst 1 end orr run n eql 0 end thn 
+                    ret 1 %
+                end
+
+                ret n mul factorial run n sub 1 end %
+            end
+        `;
+        const scanner = new Scanner(source);
+        const parser = new Parser(scanner);
+        const program = parser.parseProgram();
+
+        const expected = new Program(
+            new Block(
+                new Statements([
+                    new FunctionDeclaration(
+                        new Identifier("factorial"),
+                        [new Identifier("n")],
+                        [new Type("int")],
+                        new Statements([
+                            new IffStatement(
+                                new BinaryExpression(
+                                    new BinaryExpression(
+                                        new VariableExpression(
+                                            new Identifier("n")
+                                        ),
+                                        new Operator("lst"),
+                                        new IntLiteralExpression(
+                                            new IntegerLiteral("1")
+                                        )
+                                    ),
+                                    new Operator("orr"),
+                                    new BinaryExpression(
+                                        new VariableExpression(
+                                            new Identifier("n")
+                                        ),
+                                        new Operator("eql"),
+                                        new IntLiteralExpression(
+                                            new IntegerLiteral("0")
+                                        )
+                                    )
+                                ),
+                                new Statements([
+                                    new RetStatement(
+                                        new IntLiteralExpression(
+                                            new IntegerLiteral("1")
+                                        )
+                                    ),
+                                ]),
+                                undefined
+                            ),
+
+                            new RetStatement(
+                                new BinaryExpression(
+                                    new VariableExpression(new Identifier("n")),
+                                    new Operator("mul"),
+                                    new CallExpression(
+                                        new Identifier("factorial"),
+                                        new ExpressionList([
+                                            new BinaryExpression(
+                                                new VariableExpression(
+                                                    new Identifier("n")
+                                                ),
+                                                new Operator("sub"),
+                                                new IntLiteralExpression(
+                                                    new IntegerLiteral("1")
+                                                )
+                                            ),
+                                        ])
+                                    )
+                                )
+                            ),
+                        ])
+                    ),
+                ])
+            )
+        );
+
+        expect(program).toEqual(expected);
     });
 });

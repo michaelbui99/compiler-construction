@@ -13,14 +13,18 @@
         "clean": "rimraf ./dist",
         "test": "jest",
         "prebuild": "npm run clean",
-        "build": "tsc",
+        "build": "tsc && cp -r ./src/vm ./dist/src/vm",
         "prestart": "npm run build",
         "start": "node ./dist/src/index.js",
         "preexporter": "npm run build",
-        "exporter": "node ./dist/src/ast-exporter.js"
+        "exporter": "node ./dist/src/ast-exporter.js",
+        "tam": "java -jar ./src/vm/TAM.jar"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "description": ""
+    "description": "",
+    "dependencies": {
+        "cmd-ts": "^0.13.0"
+    }
 }

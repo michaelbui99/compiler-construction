@@ -14,7 +14,7 @@ describe("Check compiler", () => {
         const checker = new Checker();
         checker.visitProgram(ast, undefined);
         const encoder = new Encoder();
-        encoder.ecnode(ast, "../code/code-1.txt");
+        encoder.encode(ast, "../code/code-1.txt");
     });
 
     test("test expression result of literal", () => {
@@ -25,7 +25,7 @@ describe("Check compiler", () => {
         const checker = new Checker();
         checker.visitProgram(ast, undefined);
         const encoder = new Encoder();
-        encoder.ecnode(ast, "../code/code-2.txt");
+        encoder.encode(ast, "../code/code-2.txt");
     });
 
     test("test expression result of literal", () => {
@@ -36,7 +36,7 @@ describe("Check compiler", () => {
         const checker = new Checker();
         checker.visitProgram(ast, undefined);
         const encoder = new Encoder();
-        encoder.ecnode(ast, "code-3");
+        encoder.encode(ast, "code-3");
     });
 
     test("test making variable", () => {
@@ -47,7 +47,7 @@ describe("Check compiler", () => {
         const checker = new Checker();
         checker.visitProgram(ast, undefined);
         const encoder = new Encoder();
-        encoder.ecnode(ast, "code-4");
+        encoder.encode(ast, "code-4");
     });
 
     test("test making out var", () => {
@@ -58,6 +58,6 @@ describe("Check compiler", () => {
         const checker = new Checker();
         checker.visitProgram(ast, undefined);
         const encoder = new Encoder();
-        encoder.ecnode(ast, "code-4");
+        encoder.encode(ast, "code-4");
     });
 });

@@ -2,7 +2,7 @@
 
 Identifier ::= Letter (Letter|Digit){0, 1} | Letter (Letter|Digit){3,}
 
-Digit ::= \d
+Digit ::= [0-9]
 
 Letter ::= [A-Za-z]
 

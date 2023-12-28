@@ -48,9 +48,12 @@ export class Encoder implements IVisitor {
     public currentLevel: number = 0;
     private allocationTracker = new AllocationTracker();
 
-    ecnode(program: Program, toFile?: string) {
+    encode(program: Program, toFile?: string) {
         Machine.code = new Array(1024);
         program.accept(this, null);
+        this.saveTargetProgram(
+            toFile ?? path.resolve(process.cwd(), "program.tam")
+        );
         console.log(toFile);
         console.log(Machine.code);
     }
@@ -81,7 +84,7 @@ export class Encoder implements IVisitor {
         // We need result of expression on the stack.
         node.expression.accept(this, pushValueToStack);
 
-        // We don't know where to jump yet, so just put placeholder and store where we currently are.
+        // We don't know where to jump yet since we don't know the amount of instructions, so just put placeholder and store where we currently are.
         let thenJumpAddress = this.nextAddress;
         // Machine[jump1adr] is now equal to this jump instruction
         this.emit(Machine.JUMPIFop, 0, Machine.CBr, 0);
@@ -146,15 +149,15 @@ export class Encoder implements IVisitor {
     }
 
     visitBreakStatement(node: BreakStatement, args: any) {
-        throw new Error("Method not implemented.");
+        // throw new Error("Method not implemented.");
     }
 
     visitGetDeclaration(node: GetDelcaration, args: any) {
-        throw new Error("Method not implemented.");
+        // throw new Error("Method not implemented.");
     }
 
     visitFunctionDeclaration(node: FunctionDeclaration, args: any) {
-        throw new Error("Method not implemented.");
+        // throw new Error("Method not implemented.");
     }
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
@@ -446,6 +449,7 @@ export class Encoder implements IVisitor {
 
     private saveTargetProgram(fileName: string) {
         try {
+            console.log(`Saving program to ${path.resolve(fileName)}`);
             const writeStream = fs.createWriteStream(path.resolve(fileName));
 
             for (let i = Machine.CB; i < this.nextAddress; i++) {

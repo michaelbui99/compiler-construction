@@ -152,4 +152,52 @@ describe("Scan tokens", () => {
             { kind: TokenKind.EOF, spelling: "" },
         ] as Token[]);
     });
+
+    test("Factorial", () => {
+        const source = `
+            fun factorial n int thn
+                iff n lst 1 orr n eql 0 thn 
+                    ret 1 %
+                end
+
+                ret n mul factorial run n sub 1 end %
+            end
+        `;
+        let scanner = new Scanner(source);
+
+        let tokens = scanner.scanAll();
+
+        expect(tokens).toEqual([
+            { kind: TokenKind.FUNCTION, spelling: "fun" },
+            { kind: TokenKind.IDENTIFIER, spelling: "factorial" },
+            { kind: TokenKind.IDENTIFIER, spelling: "n" },
+            { kind: TokenKind.TYPE, spelling: "int" },
+            { kind: TokenKind.THEN, spelling: "thn" },
+            { kind: TokenKind.IFF, spelling: "iff" },
+            { kind: TokenKind.IDENTIFIER, spelling: "n" },
+            { kind: TokenKind.OPERATOR, spelling: "lst" },
+            { kind: TokenKind.INTEGER_LITTERAL, spelling: "1" },
+            { kind: TokenKind.OPERATOR, spelling: "orr" },
+            { kind: TokenKind.IDENTIFIER, spelling: "n" },
+            { kind: TokenKind.OPERATOR, spelling: "eql" },
+            { kind: TokenKind.INTEGER_LITTERAL, spelling: "0" },
+            { kind: TokenKind.THEN, spelling: "thn" },
+            { kind: TokenKind.RETURN, spelling: "ret" },
+            { kind: TokenKind.INTEGER_LITTERAL, spelling: "1" },
+            { kind: TokenKind.PERCENT, spelling: "%" },
+            { kind: TokenKind.END, spelling: "end" },
+            { kind: TokenKind.RETURN, spelling: "ret" },
+            { kind: TokenKind.IDENTIFIER, spelling: "n" },
+            { kind: TokenKind.OPERATOR, spelling: "mul" },
+            { kind: TokenKind.IDENTIFIER, spelling: "factorial" },
+            { kind: TokenKind.RUN, spelling: "run" },
+            { kind: TokenKind.IDENTIFIER, spelling: "n" },
+            { kind: TokenKind.OPERATOR, spelling: "sub" },
+            { kind: TokenKind.INTEGER_LITTERAL, spelling: "1" },
+            { kind: TokenKind.END, spelling: "end" },
+            { kind: TokenKind.PERCENT, spelling: "%" },
+            { kind: TokenKind.END, spelling: "end" },
+            { kind: TokenKind.EOF, spelling: "" },
+        ] as Token[]);
+    });
 });

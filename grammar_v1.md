@@ -51,7 +51,7 @@ Index ::= (#(**InterLitteral**)|(**Identifier**))+
 
 Type ::= **bol** | **int** | **str**
 
-```
+<!-- ```
 NOTE: Indexing arrays:
 
 let myArr arr 1 2 3 4
@@ -63,4 +63,4 @@ len myArr
 
 6 * 5
 
-```
+``` -->
