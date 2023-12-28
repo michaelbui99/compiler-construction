@@ -205,7 +205,6 @@ export class Checker implements IVisitor {
         node.params.forEach((param) => param.accept(this, args));
         node.paramTypes.forEach((paramType) => paramType.accept(this, args));
         node.statments.accept(this, args);
-        this.idTable.closeScope();
 
         // Ensure that every return is of same type.
         const retStatements: RetStatement[] = [];
@@ -233,6 +232,7 @@ export class Checker implements IVisitor {
 
             node.returnType = expectedType;
         }
+        this.idTable.closeScope();
 
         return null;
     }
@@ -256,7 +256,7 @@ export class Checker implements IVisitor {
                     );
                 }
                 if (
-                    // type.kind !== ExpressionTypeKind.ARRAY &&
+                    type.kind !== ExpressionTypeKind.ARRAY &&
                     type.kind !== ExpressionTypeKind.INTEGER
                 ) {
                     throw new CompilerError(
