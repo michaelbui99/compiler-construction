@@ -239,11 +239,11 @@ export class Checker implements IVisitor {
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
         const id = node.identifier.accept(this, args);
-        this.idTable.declare(id, node);
         const type: ExpressionType = node.expression?.accept(this, args);
         if (type) {
             node.type = type;
         }
+        this.idTable.declare(id, node);
         // Elements in ExpressionList indicates that it is an array declaration.
         if (node.expressionList !== undefined) {
             let firstType: ExpressionType =
@@ -263,6 +263,11 @@ export class Checker implements IVisitor {
                         "Arrays can have elements of type array or integer only."
                     );
                 }
+                node.type = {
+                    kind: ExpressionTypeKind.ARRAY,
+                    spelling: "arr",
+                    depth: 1,
+                };
             });
             node.expressionList?.accept(this, args);
         } else if (node.indexList !== undefined) {
@@ -477,6 +482,7 @@ export class Checker implements IVisitor {
         return node.spelling;
     }
     visitIntegerLiteral(node: IntegerLiteral, args: any) {
+        console.log("HERE");
         return {
             kind: ExpressionTypeKind.INTEGER,
             spelling: node.spelling,

@@ -163,7 +163,6 @@ export class Encoder implements IVisitor {
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
         let size: number = 1;
         const type = node.type!;
-
         switch (type.kind) {
             case ExpressionTypeKind.BOOLEAN:
             case ExpressionTypeKind.INTEGER:

@@ -1,1 +1,3 @@
-out 1%
+let a 5%
+
+out a %
