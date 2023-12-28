@@ -51,9 +51,6 @@ export class Encoder implements IVisitor {
     encode(program: Program, toFile?: string) {
         Machine.code = new Array(1024);
         program.accept(this, null);
-        this.saveTargetProgram(
-            toFile ?? path.resolve(process.cwd(), "program.tam")
-        );
         console.log(toFile);
         console.log(Machine.code);
     }
@@ -447,7 +444,7 @@ export class Encoder implements IVisitor {
         }
     }
 
-    private saveTargetProgram(fileName: string) {
+    public saveTargetProgram(fileName: string) {
         try {
             console.log(`Saving program to ${path.resolve(fileName)}`);
             const writeStream = fs.createWriteStream(path.resolve(fileName));

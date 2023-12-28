@@ -24,6 +24,12 @@ const app = command({
         const scanner = new Scanner(source);
         const parser = new Parser(scanner);
         const encoder = new Encoder();
+        if (file && !file.endsWith(".tam")) {
+            file = `${file}.tam`;
+        }
+        encoder.saveTargetProgram(
+            file ?? path.resolve(process.cwd(), "program.tam")
+        );
 
         const program = parser.parseProgram();
         encoder.encode(program, out);

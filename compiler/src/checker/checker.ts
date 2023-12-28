@@ -183,7 +183,6 @@ export class Checker implements IVisitor {
             let type = node.paramTypes[idx];
             let expression;
             // We need this so the check can perform type checking in call expression
-            // TODO: Figure out how we do type checking. Maybe another visitor. Probably ask teacher.
             switch (type.spelling) {
                 case "int":
                     expression = new IntLiteralExpression(
@@ -245,6 +244,7 @@ export class Checker implements IVisitor {
         if (type) {
             node.type = type;
         }
+        // Elements in ExpressionList indicates that it is an array declaration.
         if (node.expressionList !== undefined) {
             let firstType: ExpressionType =
                 node.expressionList.expressions[0].accept(this, args);
@@ -256,7 +256,7 @@ export class Checker implements IVisitor {
                     );
                 }
                 if (
-                    type.kind !== ExpressionTypeKind.ARRAY &&
+                    // type.kind !== ExpressionTypeKind.ARRAY &&
                     type.kind !== ExpressionTypeKind.INTEGER
                 ) {
                     throw new CompilerError(
