@@ -5,6 +5,7 @@ import { Parser } from "./ast/parser";
 import { Scanner } from "./scanner/scanner";
 import { exec } from "child_process";
 import { Encoder } from "./codegen/encoder";
+import { Checker } from "./checker/checker";
 
 // const TAM_JAR_PATH = path.resolve(__dirname, "vm", "TAM.jar");
 
@@ -23,8 +24,10 @@ const app = command({
         const source = fs.readFileSync(file, "utf-8");
         const scanner = new Scanner(source);
         const parser = new Parser(scanner);
+        const checker = new Checker();
         const encoder = new Encoder();
         const program = parser.parseProgram();
+        checker.check(program);
         encoder.encode(program, out);
 
         if (file && !file.endsWith(".tam")) {

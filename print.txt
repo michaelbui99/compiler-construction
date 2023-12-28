@@ -1,3 +1,5 @@
 let a 5%
+let b 2%
+let c run a mul b end %
 
-out a %
+out c %
