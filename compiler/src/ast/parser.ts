@@ -106,6 +106,7 @@ export class Parser {
                 return this.parseRetStatement();
             case TokenKind.BREAK:
                 this.accept(TokenKind.BREAK);
+                this.accept(TokenKind.PERCENT);
                 return new BreakStatement();
             default:
                 this.reportError(

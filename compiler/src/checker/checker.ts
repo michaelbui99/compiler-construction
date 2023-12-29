@@ -341,7 +341,7 @@ export class Checker implements IVisitor {
             }
         }
         throw new CompilerError(
-            `operatior ${token.spelling} can not be applies to ${operand1.spelling} of kind ${operand1.kind} and ${operand2.spelling} with kind ${operand2.kind}`
+            `operatior ${token.spelling} can not be applies to ${operand1.spelling} of kind ${operand1.kind} and ${operand2.spelling} of kind ${operand2.kind}`
         );
     }
     visitVariableExpression(node: VariableExpression, args: any) {

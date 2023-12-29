@@ -13,7 +13,7 @@ Statement ::= ExpressionResult
 | **out** ExpressionResult **%**
 | **ass** **Identifier** (Ø | Index) ExpressionResult **%**
 | **ret** ExpressionResult **%**
-| **brk**
+| **brk** **%**
 
 Declaration ::= **get** **Identifier** **%**
 | **fun** **Identifier** (**Identifier** (**Type** | **arr**) )\* **thn** Statements **end**

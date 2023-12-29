@@ -4,6 +4,7 @@ export type Allocation = {
     identifier: string;
     displacement: number;
     type?: ExpressionType;
+    wordSize?: number;
 };
 
 export class AllocationTracker {
@@ -21,7 +22,7 @@ export class AllocationTracker {
         }
     }
 
-    allocate(id: string, type?: ExpressionType): number {
+    allocate(id: string, type?: ExpressionType, wordSize?: number): number {
         if (!this.allocations.has(this.currentLevel)) {
             this.allocations.set(this.currentLevel, []);
         }
@@ -31,10 +32,13 @@ export class AllocationTracker {
                 identifier: id,
                 displacement: this.nextDisplacement,
                 type,
+                wordSize,
             },
         ]);
+        console.log("Allocated new identifier");
+        console.log(this.allocations);
         const allocatedAt = this.nextDisplacement;
-        this.nextDisplacement++;
+        this.nextDisplacement += 1;
         return allocatedAt;
     }
 
@@ -55,7 +59,15 @@ export class AllocationTracker {
     }
 
     endScope() {
+        this.clearAllocationsForCurrentScope();
+        if (this.currentLevel === 0) {
+            return;
+        } else {
+            this.currentLevel--;
+        }
+    }
+
+    private clearAllocationsForCurrentScope() {
         this.allocations.set(this.currentLevel, []);
-        this.currentLevel--;
     }
 }

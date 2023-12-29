@@ -51,7 +51,7 @@ export class Encoder implements IVisitor {
     encode(program: Program, toFile?: string) {
         Machine.code = new Array(1024);
         program.accept(this, null);
-        console.log(toFile);
+        console.log("Final instructions:");
         console.log(Machine.code);
     }
 
@@ -122,6 +122,7 @@ export class Encoder implements IVisitor {
     visitOutStatement(node: OutStatement, args: any) {
         const pushValueToStack = true;
         const exprs = node.expression.accept(this, pushValueToStack);
+        console.log("Performing out");
         this.emit(Machine.CALLop, 0, Machine.PBr, Machine.putintDisplacement);
         this.emit(Machine.CALLop, 0, Machine.PBr, Machine.puteolDisplacement);
     }
@@ -148,6 +149,11 @@ export class Encoder implements IVisitor {
 
     visitBreakStatement(node: BreakStatement, args: any) {
         // throw new Error("Method not implemented.");
+        // Syntax allow break anywhere.
+        // Break at root level / global scope just halts the program.
+        if (this.allocationTracker.currentLevel === 0) {
+            this.emit(Machine.HALTop, 0, 0, 0);
+        }
     }
 
     visitGetDeclaration(node: GetDelcaration, args: any) {
@@ -156,8 +162,11 @@ export class Encoder implements IVisitor {
 
     visitFunctionDeclaration(node: FunctionDeclaration, args: any) {
         // throw new Error("Method not implemented.");
-        node.address = new Address(this.currentLevel, this.nextAddress);
-        this.currentLevel++;
+        this.allocationTracker.beginNewScope();
+        node.address = new Address(
+            this.allocationTracker.currentLevel,
+            this.nextAddress
+        );
     }
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
@@ -166,7 +175,9 @@ export class Encoder implements IVisitor {
         switch (type.kind) {
             case ExpressionTypeKind.BOOLEAN:
             case ExpressionTypeKind.INTEGER:
-                size = node.expression?.accept(this, args);
+                size = 1;
+                // Pushes value onto stack
+                node.expression?.accept(this, true);
                 break;
             case ExpressionTypeKind.STRING:
                 size = node.expression?.accept(this, args);
@@ -175,7 +186,8 @@ export class Encoder implements IVisitor {
 
         const nextDisplacement = this.allocationTracker.allocate(
             node.identifier.spelling,
-            node.type
+            node.type,
+            size
         );
 
         node.address = new Address(
@@ -184,10 +196,16 @@ export class Encoder implements IVisitor {
         );
 
         if (this.allocationTracker.currentLevel == 0) {
-            // Global variable
+            // Global variable. Address i relative displacement to stack base register.
+            console.log(
+                `Storing IDENTIFIER ${node.identifier.spelling} at REGISTER ${Machine.SBr} with DISPLACEMENT of ${nextDisplacement}`
+            );
             this.emit(Machine.STOREop, size, Machine.SBr, nextDisplacement);
         } else {
-            // Local variable in scope.
+            // Local variable in scope. Address is relative displacement to the local base register
+            console.log(
+                `Storing IDENTIFIER ${node.identifier.spelling} at REGISTER ${Machine.LBr} with DISPLACEMENT of ${nextDisplacement}`
+            );
             this.emit(Machine.STOREop, size, Machine.LBr, nextDisplacement);
         }
     }
@@ -270,6 +288,7 @@ export class Encoder implements IVisitor {
         if (pushValueToStack) {
             switch (operator) {
                 case "add":
+                    console.log(`Performing add`);
                     this.emit(
                         Machine.CALLop,
                         0,
@@ -278,6 +297,7 @@ export class Encoder implements IVisitor {
                     );
                     break;
                 case "sub":
+                    console.log(`Performing sub`);
                     this.emit(
                         Machine.CALLop,
                         0,
@@ -286,6 +306,7 @@ export class Encoder implements IVisitor {
                     );
                     break;
                 case "mul":
+                    console.log(`Performing mul`);
                     this.emit(
                         Machine.CALLop,
                         0,
@@ -294,6 +315,7 @@ export class Encoder implements IVisitor {
                     );
                     break;
                 case "div":
+                    console.log(`Performing div`);
                     this.emit(
                         Machine.CALLop,
                         0,
@@ -302,6 +324,7 @@ export class Encoder implements IVisitor {
                     );
                     break;
                 case "mod":
+                    console.log(`Performing mod`);
                     this.emit(
                         Machine.CALLop,
                         0,
@@ -310,6 +333,7 @@ export class Encoder implements IVisitor {
                     );
                     break;
                 case "and":
+                    console.log(`Performing and`);
                     this.emit(
                         Machine.CALLop,
                         0,
@@ -318,6 +342,7 @@ export class Encoder implements IVisitor {
                     );
                     break;
                 case "or":
+                    console.log(`Performing or`);
                     this.emit(
                         Machine.CALLop,
                         0,
@@ -326,6 +351,7 @@ export class Encoder implements IVisitor {
                     );
                     break;
                 case "grt":
+                    console.log(`Performaing grt`);
                     this.emit(
                         Machine.CALLop,
                         0,
@@ -334,6 +360,7 @@ export class Encoder implements IVisitor {
                     );
                     break;
                 case "lst":
+                    console.log(`Performaing lst`);
                     this.emit(
                         Machine.CALLop,
                         0,
@@ -363,6 +390,9 @@ export class Encoder implements IVisitor {
                     // TODO: Handle special case
                     break;
                 case ExpressionTypeKind.INTEGER:
+                    console.log(
+                        `Pushing IDENTIFIER ${node.identifier.spelling} located at REGISTER ${register} with DISPLACEMENT of ${address.displacement} to the stack`
+                    );
                     this.emit(
                         Machine.LOADop,
                         1,
@@ -397,7 +427,6 @@ export class Encoder implements IVisitor {
         return Number(node.spelling);
     }
     visitBooleanLiteral(node: BooleanLiteral, args: any) {
-        // TODO: maybe 1 for tru, 0 for not tru, let's see how this will be used.
         return node.spelling;
     }
     visitStringLiteral(node: StringLiteral, args: any) {
@@ -413,6 +442,11 @@ export class Encoder implements IVisitor {
     private emit(op: number, n: number, r: number, d: number) {
         if (n > 255) {
             console.log(`Operand too long`);
+        }
+
+        if (!n && op === 4) {
+            console.log("HERE NO N");
+            console.log(new Error().stack);
         }
 
         const instruction = new Instruction();
