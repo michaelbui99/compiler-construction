@@ -42,6 +42,8 @@ import {
 } from "../checker/expression-types";
 import { AllocationTracker } from "./allocation-tracker";
 
+const DEFAULT_INT_VALUE = 0;
+const DEFAULT_BOOL_VALUE = false;
 export class Encoder implements IVisitor {
     // Initialize at the CB / Code Base.
     private nextAddress: number = Machine.CB;
@@ -63,6 +65,7 @@ export class Encoder implements IVisitor {
     }
 
     visitBlock(node: Block, args: any) {
+        // NOTE: Fixes a bug where identifiers were not stored correctly, but unsure why...
         this.emit(Machine.PUSHop, 0, 0, 3);
         node.statements.accept(this, args);
         return null;
@@ -175,12 +178,29 @@ export class Encoder implements IVisitor {
     }
 
     visitFunctionDeclaration(node: FunctionDeclaration, args: any) {
-        // throw new Error("Method not implemented.");
-        this.allocationTracker.beginNewScope();
         node.address = new Address(
             this.allocationTracker.currentLevel,
             this.nextAddress
         );
+
+        // Begin new scope and push params onto the stack
+        this.allocationTracker.beginNewScope();
+        let paramSize = 0;
+        node.params.forEach((param, idx) => {
+            const type = node.paramTypes[idx].spelling;
+            switch (type) {
+                case "int":
+                    const varDeclaration = new VariableDeclaration(
+                        param,
+                        new IntLiteralExpression(
+                            new IntegerLiteral(DEFAULT_INT_VALUE + "")
+                        )
+                    );
+                    varDeclaration.accept(this, null);
+                    paramSize += 1;
+                    break;
+            }
+        });
     }
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
@@ -194,7 +214,7 @@ export class Encoder implements IVisitor {
                 node.expression?.accept(this, true);
                 break;
             case ExpressionTypeKind.STRING:
-                size = node.expression?.accept(this, args);
+                size = node.expression?.accept(this, true);
                 break;
         }
 

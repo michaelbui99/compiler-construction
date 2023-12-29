@@ -11,6 +11,7 @@ export class AllocationTracker {
     private nextDisplacement = 0;
     public currentLevel = 0;
     private allocations = new Map<number, Allocation[]>();
+    private displacements = new Map<number, number>();
 
     constructor() {}
 
@@ -20,11 +21,15 @@ export class AllocationTracker {
         if (!this.allocations.has(this.currentLevel)) {
             this.allocations.set(this.currentLevel, []);
         }
+        if (!this.displacements.has(this.currentLevel)) {
+            this.displacements.set(this.currentLevel, 0);
+        }
     }
 
     allocate(id: string, type?: ExpressionType, wordSize?: number): number {
         if (!this.allocations.has(this.currentLevel)) {
             this.allocations.set(this.currentLevel, []);
+            this.displacements.set(this.currentLevel, 0);
         }
         this.allocations.set(this.currentLevel, [
             ...(this.allocations.get(this.currentLevel) as Allocation[]),
@@ -37,9 +42,20 @@ export class AllocationTracker {
         ]);
         console.log("Allocated new identifier");
         console.log(this.allocations);
-        const allocatedAt = this.nextDisplacement;
-        this.nextDisplacement += 1;
+        const allocatedAt = this.displacements.get(this.currentLevel)!;
+        this.displacements.set(
+            this.currentLevel,
+            this.displacements.get(this.currentLevel)! + 1
+        );
         return allocatedAt;
+    }
+
+    incrementDisplacement(level: number, amount: number) {
+        if (!this.displacements.has(level)) {
+            this.displacements.set(level, 0);
+        }
+
+        this.displacements.set(level, this.displacements.get(level)! + amount);
     }
 
     get(id: string, level: number): Allocation | undefined {
@@ -58,8 +74,17 @@ export class AllocationTracker {
         return undefined;
     }
 
+    getAllocations(level: number): Allocation[] {
+        if (!this.allocations.has(level)) {
+            return [];
+        }
+
+        return this.allocations.get(level)!;
+    }
+
     endScope() {
         this.clearAllocationsForCurrentScope();
+        this.resetDisplacementsForCurrentScope();
         if (this.currentLevel === 0) {
             return;
         } else {
@@ -69,5 +94,8 @@ export class AllocationTracker {
 
     private clearAllocationsForCurrentScope() {
         this.allocations.set(this.currentLevel, []);
+    }
+    private resetDisplacementsForCurrentScope() {
+        this.displacements.set(this.currentLevel, 0);
     }
 }
