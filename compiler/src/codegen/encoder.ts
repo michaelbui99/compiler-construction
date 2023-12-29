@@ -63,6 +63,7 @@ export class Encoder implements IVisitor {
     }
 
     visitBlock(node: Block, args: any) {
+        this.emit(Machine.PUSHop, 0, 0, 3);
         node.statements.accept(this, args);
         return null;
     }
@@ -122,8 +123,21 @@ export class Encoder implements IVisitor {
     visitOutStatement(node: OutStatement, args: any) {
         const pushValueToStack = true;
         const exprs = node.expression.accept(this, pushValueToStack);
+        const type = node.expressionType?.kind;
         console.log("Performing out");
-        this.emit(Machine.CALLop, 0, Machine.PBr, Machine.putintDisplacement);
+        switch (type) {
+            case ExpressionTypeKind.INTEGER:
+                this.emit(
+                    Machine.CALLop,
+                    0,
+                    Machine.PBr,
+                    Machine.putintDisplacement
+                );
+                break;
+            default:
+                console.log("TODO");
+                break;
+        }
         this.emit(Machine.CALLop, 0, Machine.PBr, Machine.puteolDisplacement);
     }
 
@@ -472,7 +486,7 @@ export class Encoder implements IVisitor {
             // Global scope, SBr -> current stack position.
             return Machine.SBr;
         } else if (currentLevel - entityLevel <= 6) {
-            // Local Scope, LBr -> Current stack frame.
+            // Local Scope, LBr -> Current stack frame / currnet local position.
             return Machine.LBr + currentLevel - entityLevel;
         } else {
             console.log("Accessing across to many levels");

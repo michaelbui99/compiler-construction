@@ -1,9 +1,13 @@
 let a 4040%
 let b 4242%
 let c 4343%
-
-brk %
+let d 4444%
+let first 10 %
+let second 2 %
 
 out a %
 out b %
 out c %
+out d %
+out first%
+out second%
