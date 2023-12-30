@@ -3,6 +3,7 @@ import { ExpressionType } from "../checker/expression-types";
 export type Allocation = {
     identifier: string;
     displacement: number;
+    level: number;
     type?: ExpressionType;
     wordSize?: number;
 };
@@ -38,6 +39,7 @@ export class AllocationTracker {
                 displacement: this.nextDisplacement,
                 type,
                 wordSize,
+                level: this.currentLevel,
             },
         ]);
         console.log("Allocated new identifier");
@@ -72,6 +74,33 @@ export class AllocationTracker {
         }
 
         return undefined;
+    }
+
+    // Accounts for shadowing
+    getLatest(id: string): Allocation | undefined {
+        console.log(
+            `Searching for allocation with id ${id}....`,
+            this.allocations
+        );
+        let levels = [] as number[];
+        this.allocations.forEach((val, key) => {
+            levels.push(key);
+        });
+
+        const levelsDescending = levels.sort().reverse();
+        let hit: Allocation | undefined = undefined;
+        levelsDescending.forEach((level) => {
+            const allocationsInLevel = this.getAllocations(level);
+            const allocation = allocationsInLevel.find(
+                (a) => a.identifier === id
+            );
+            if (!hit && allocation) {
+                console.log(`Found allocation: ${allocation}`);
+                hit = allocation;
+            }
+        });
+
+        return hit;
     }
 
     getAllocations(level: number): Allocation[] {

@@ -1,0 +1,5 @@
+fun printNums a int thn
+    out a%
+end
+
+printNums 2

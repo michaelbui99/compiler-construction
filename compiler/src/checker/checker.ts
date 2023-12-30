@@ -62,8 +62,7 @@ export class Checker implements IVisitor {
     }
 
     visitExpressionResultStatement(node: ExpressionResult, args: any) {
-        node.accept(this, args);
-        return null;
+        return node.accept(this, args);
     }
 
     visitIffStatement(node: IffStatement, args: any) {
@@ -181,6 +180,7 @@ export class Checker implements IVisitor {
         node.params.forEach((param, idx) => {
             // Params of function are treated as variables inside the function
             let type = node.paramTypes[idx];
+            let expresionType: ExpressionType | undefined = undefined;
             let expression;
             // We need this so the check can perform type checking in call expression
             switch (type.spelling) {
@@ -188,18 +188,36 @@ export class Checker implements IVisitor {
                     expression = new IntLiteralExpression(
                         new IntegerLiteral("0")
                     );
+                    expresionType = {
+                        depth: 0,
+                        kind: ExpressionTypeKind.INTEGER,
+                        spelling: "int",
+                    };
+
                     break;
                 case "bol":
                     expression = new BooleanLiteralExpression(
                         new BooleanLiteral("tru")
                     );
+                    expresionType = {
+                        depth: 0,
+                        kind: ExpressionTypeKind.BOOLEAN,
+                        spelling: "bol",
+                    };
                     break;
                 default:
                     break;
             }
             this.idTable.declare(
                 param.spelling,
-                new VariableDeclaration(param)
+                new VariableDeclaration(
+                    param,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    expresionType
+                )
             );
         });
         node.params.forEach((param) => param.accept(this, args));

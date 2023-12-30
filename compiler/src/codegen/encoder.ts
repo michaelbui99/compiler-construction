@@ -41,6 +41,7 @@ import {
     ExpressionTypeKind,
 } from "../checker/expression-types";
 import { AllocationTracker } from "./allocation-tracker";
+import { CompilerError } from "../checker/exceptions";
 
 const DEFAULT_INT_VALUE = 0;
 const DEFAULT_BOOL_VALUE = false;
@@ -146,21 +147,38 @@ export class Encoder implements IVisitor {
 
     visitAssStatement(node: AssStatement, args: any) {
         const address: Address = node.declaration?.address!;
+        const allocation = this.allocationTracker.getLatest(
+            node.identifier.spelling
+        );
+
+        if (!allocation) {
+            throw new Error(
+                `Allocation for node ${node.identifier} has not been tracked correctly`
+            );
+        }
+
         const pushValueToStack = true;
         const returnSize = node.expression.accept(this, pushValueToStack);
 
         const register = this.displayRegister(
             this.allocationTracker.currentLevel,
-            address.level
+            allocation.displacement
         );
-        this.emit(Machine.STOREop, returnSize, register, address.displacement);
+        this.emit(
+            Machine.STOREop,
+            returnSize,
+            register,
+            allocation.displacement
+        );
 
         return undefined;
     }
 
     visitRetStatement(node: RetStatement, args: any) {
         const pushValueToStack = true;
+        const paramsSize = args;
         node.expression.accept(this, pushValueToStack);
+        this.emit(Machine.RETURNop, 1, 0, paramsSize);
         this.allocationTracker.endScope();
     }
 
@@ -190,17 +208,48 @@ export class Encoder implements IVisitor {
             const type = node.paramTypes[idx].spelling;
             switch (type) {
                 case "int":
+                    const expressionType = {
+                        depth: 0,
+                        kind: ExpressionTypeKind.INTEGER,
+                        spelling: "int",
+                    };
                     const varDeclaration = new VariableDeclaration(
                         param,
                         new IntLiteralExpression(
                             new IntegerLiteral(DEFAULT_INT_VALUE + "")
-                        )
+                        ),
+                        undefined,
+                        undefined,
+                        undefined,
+                        expressionType
                     );
                     varDeclaration.accept(this, null);
                     paramSize += 1;
                     break;
             }
         });
+
+        // Skipping over link data
+        this.allocationTracker.incrementDisplacement(
+            this.allocationTracker.currentLevel,
+            Machine.linkDataSize
+        );
+        // Special case for return statements, since function may not always return something.
+        let hasReturn = false;
+        node.statments.statements.forEach((statement) => {
+            if (statement instanceof RetStatement) {
+                statement.accept(this, paramSize);
+                hasReturn = true;
+            } else {
+                statement.accept(this, null);
+            }
+        });
+
+        if (!hasReturn) {
+            // Ensuring we actually return in case there is no return statement.
+            this.emit(Machine.RETURNop, 0, 0, paramSize);
+            this.allocationTracker.endScope();
+        }
     }
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
@@ -411,9 +460,19 @@ export class Encoder implements IVisitor {
         const pushValueToStack = args;
 
         const address = node.declaration?.address!;
+        const allocation = this.allocationTracker.getLatest(
+            node.identifier.spelling
+        );
+
+        if (!allocation) {
+            throw new CompilerError(
+                `Allocation for node with id ${node.identifier.spelling} has not been tracked correctly.`
+            );
+        }
+
         const register = this.displayRegister(
             this.allocationTracker.currentLevel,
-            address.level
+            allocation!.displacement!
         );
 
         const type = node.declaration?.type!;
@@ -425,13 +484,17 @@ export class Encoder implements IVisitor {
                     break;
                 case ExpressionTypeKind.INTEGER:
                     console.log(
-                        `Pushing IDENTIFIER ${node.identifier.spelling} located at REGISTER ${register} with DISPLACEMENT of ${address.displacement} to the stack`
+                        `Pushing IDENTIFIER ${
+                            node.identifier.spelling
+                        } located at REGISTER ${register} with DISPLACEMENT of ${
+                            allocation!.displacement
+                        } to the stack`
                     );
                     this.emit(
                         Machine.LOADop,
                         1,
                         register,
-                        address.displacement
+                        allocation.displacement
                     );
                     break;
                 default:
@@ -439,7 +502,7 @@ export class Encoder implements IVisitor {
                         Machine.LOADop,
                         1,
                         register,
-                        address.displacement
+                        allocation.displacement
                     );
                     break;
             }
