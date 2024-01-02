@@ -53,10 +53,12 @@ export class Encoder implements IVisitor {
     encode(program: Program, toFile?: string) {
         Machine.code = new Array(1024);
         program.accept(this, null);
+        console.log("Allocations: ");
+        this.allocationTracker.printAllocations();
+        console.log("Displacements: ");
+        this.allocationTracker.printDisplacements();
         console.log("Final instructions:");
         console.log(Machine.code);
-        this.allocationTracker.printAllocations();
-        this.allocationTracker.printDisplacements();
     }
 
     visitProgram(node: Program, args: any) {
