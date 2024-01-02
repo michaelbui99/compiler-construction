@@ -6,7 +6,7 @@ Block ::= Statements
 
 Statements ::= (Statement)\*
 
-Statement ::= ExpressionResult %
+Statement ::= ExpressionResult
 | Declaration
 | **iff** ExpressionResult **thn** Statements (Ø | **els** Statements )**end**
 | **for** ExpressionResult **thn** Statements **end**

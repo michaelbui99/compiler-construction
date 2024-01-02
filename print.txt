@@ -4,7 +4,6 @@ let c 4343%
 let d 4444%
 let first 10 %
 let second 2 %
-let third run  first add second end%
 
 out a %
 out b %
@@ -12,4 +11,3 @@ out c %
 out d %
 out first%
 out second%
-out third%
