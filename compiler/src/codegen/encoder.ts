@@ -55,6 +55,8 @@ export class Encoder implements IVisitor {
         program.accept(this, null);
         console.log("Final instructions:");
         console.log(Machine.code);
+        this.allocationTracker.printAllocations();
+        this.allocationTracker.printDisplacements();
     }
 
     visitProgram(node: Program, args: any) {
@@ -455,7 +457,7 @@ export class Encoder implements IVisitor {
         throw new Error("Method not implemented.");
     }
     visitIdentifier(node: Identifier, args: any) {
-        return undefined;
+        return node.spelling;
     }
     visitIntegerLiteral(node: IntegerLiteral, args: any) {
         return Number(node.spelling);

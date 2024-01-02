@@ -35,7 +35,7 @@ export class AllocationTracker {
             ...(this.allocations.get(this.currentLevel) as Allocation[]),
             {
                 identifier: id,
-                displacement: this.nextDisplacement,
+                displacement: this.displacements.get(this.currentLevel)!,
                 type,
                 wordSize,
             },
@@ -90,6 +90,13 @@ export class AllocationTracker {
         } else {
             this.currentLevel--;
         }
+    }
+
+    printAllocations() {
+        console.log(this.allocations);
+    }
+    printDisplacements() {
+        console.log(this.displacements);
     }
 
     private clearAllocationsForCurrentScope() {
