@@ -50,7 +50,8 @@ export class FunctionDeclaration extends Declaration {
         public paramTypes: Type[],
         public statments: Statements,
         public address?: Address,
-        public returnType?: ExpressionType
+        public returnType?: ExpressionType,
+        public declarations?: VariableDeclaration[]
     ) {
         super(identifier);
     }

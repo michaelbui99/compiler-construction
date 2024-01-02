@@ -74,15 +74,17 @@ export class Encoder implements IVisitor {
         node.statements.accept(this, args);
         return null;
     }
+
     visitStatements(node: Statements, args: any) {
         node.statements.forEach((statement) => statement.accept(this, args));
         return null;
     }
+
     visitExpressionResultStatement(node: ExpressionResult, args: any) {
         const pushValueToStack = false;
-        node.accept(this, pushValueToStack);
-        return undefined;
+        return node.accept(this, pushValueToStack);
     }
+
     visitIffStatement(node: IffStatement, args: any) {
         this.allocationTracker.beginNewScope();
         const pushValueToStack = true;
@@ -164,7 +166,9 @@ export class Encoder implements IVisitor {
 
     visitRetStatement(node: RetStatement, args: any) {
         const pushValueToStack = true;
+        const paramsSizeInWords = args;
         node.expression.accept(this, pushValueToStack);
+        this.emit(Machine.RETURNop, 1, 0, paramsSizeInWords);
         this.allocationTracker.endScope();
     }
 
@@ -193,18 +197,38 @@ export class Encoder implements IVisitor {
         node.params.forEach((param, idx) => {
             const type = node.paramTypes[idx].spelling;
             switch (type) {
+                case "bol":
                 case "int":
-                    const varDeclaration = new VariableDeclaration(
-                        param,
-                        new IntLiteralExpression(
-                            new IntegerLiteral(DEFAULT_INT_VALUE + "")
-                        )
-                    );
-                    varDeclaration.accept(this, null);
                     paramSize += 1;
                     break;
             }
         });
+
+        node.declarations = node.declarations ?? [];
+        node.declarations.forEach((declaration) =>
+            declaration.accept(this, undefined)
+        );
+
+        // Skipping over link data
+        this.allocationTracker.incrementDisplacement(
+            this.allocationTracker.currentLevel,
+            Machine.linkDataSize
+        );
+        let hasReturn = false;
+        node.statments.statements.forEach((statement) => {
+            if (statement instanceof RetStatement) {
+                statement.accept(this, paramSize);
+                hasReturn = true;
+            } else {
+                statement.accept(this, null);
+            }
+        });
+
+        if (!hasReturn) {
+            // Ensuring we actually return in case there is no return statement.
+            this.emit(Machine.RETURNop, 0, 0, paramSize);
+            this.allocationTracker.endScope();
+        }
     }
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {

@@ -1,5 +1,7 @@
+import { ExpressionTypeKind } from "../checker/expression-types";
 import { Scanner } from "../scanner/scanner";
 import { Token, TokenKind } from "../scanner/tokens";
+import { DEFAULT_INT_VALUE } from "../type-defaults";
 import { Block } from "./block";
 import {
     Declaration,
@@ -340,6 +342,7 @@ export class Parser {
 
         const funcArguments = [] as Identifier[];
         const funcArgumentTypes = [] as Type[];
+        const declarations = [] as VariableDeclaration[];
         // @ts-ignore
         while (this.currentTerminal.kind === TokenKind.IDENTIFIER) {
             const token = this.accept(TokenKind.IDENTIFIER);
@@ -355,8 +358,30 @@ export class Parser {
                     "Type was not declared for function parameter"
                 );
             }
-            funcArguments.push(new Identifier(token.spelling));
+
+            const identifier = new Identifier(token.spelling);
+            funcArguments.push(identifier);
             funcArgumentTypes.push(new Type(typeToken!.spelling));
+            switch (typeToken!.spelling) {
+                case "int": {
+                    declarations.push(
+                        new VariableDeclaration(
+                            identifier,
+                            new IntLiteralExpression(
+                                new IntegerLiteral(DEFAULT_INT_VALUE)
+                            ),
+                            undefined,
+                            undefined,
+                            undefined,
+                            {
+                                depth: 0,
+                                kind: ExpressionTypeKind.INTEGER,
+                                spelling: "int",
+                            }
+                        )
+                    );
+                }
+            }
         }
 
         this.accept(TokenKind.THEN);

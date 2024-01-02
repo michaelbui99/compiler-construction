@@ -45,7 +45,7 @@ export class AllocationTracker {
         const allocatedAt = this.displacements.get(this.currentLevel)!;
         this.displacements.set(
             this.currentLevel,
-            this.displacements.get(this.currentLevel)! + 1
+            this.displacements.get(this.currentLevel)! + (wordSize ?? 1)
         );
         return allocatedAt;
     }
@@ -90,6 +90,32 @@ export class AllocationTracker {
         } else {
             this.currentLevel--;
         }
+    }
+    // Accounts for shadowing
+    getActiveAllocation(id: string): Allocation | undefined {
+        console.log(
+            `Searching for allocation with id ${id}....`,
+            this.allocations
+        );
+        let levels = [] as number[];
+        this.allocations.forEach((val, key) => {
+            levels.push(key);
+        });
+
+        const levelsDescending = levels.sort().reverse();
+        let hit: Allocation | undefined = undefined;
+        levelsDescending.forEach((level) => {
+            const allocationsInLevel = this.getAllocations(level);
+            const allocation = allocationsInLevel.find(
+                (a) => a.identifier === id
+            );
+            if (!hit && allocation) {
+                console.log(`Found allocation: ${allocation}`);
+                hit = allocation;
+            }
+        });
+
+        return hit;
     }
 
     printAllocations() {
