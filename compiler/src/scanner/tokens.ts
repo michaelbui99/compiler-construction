@@ -86,7 +86,6 @@ export class Token {
         return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "and",
             "orr",
-            "eql",
         ]);
     }
 
@@ -94,6 +93,7 @@ export class Token {
         return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "grt",
             "lst",
+            "eql",
         ]);
     }
 

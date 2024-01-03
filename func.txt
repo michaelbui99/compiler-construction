@@ -1,0 +1,5 @@
+fun calcSum a int b int thn
+    ret a add b %
+end
+
+out calcSum 1 2 %

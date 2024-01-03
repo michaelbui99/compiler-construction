@@ -18,7 +18,8 @@
         "start": "node ./dist/src/index.js",
         "preexporter": "npm run build",
         "exporter": "node ./dist/src/ast-exporter.js",
-        "tam": "java -jar ./src/vm/TAM.jar"
+        "tam": "java -jar ./src/vm/TAM.jar",
+        "disasm": "java -jar ./src/vm/Disassembler.jar"
     },
     "keywords": [],
     "author": "",

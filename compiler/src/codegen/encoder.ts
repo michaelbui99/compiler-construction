@@ -41,6 +41,7 @@ import {
     ExpressionTypeKind,
 } from "../checker/expression-types";
 import { AllocationTracker } from "./allocation-tracker";
+import { CompilerError } from "../checker/exceptions";
 
 const DEFAULT_INT_VALUE = 0;
 const DEFAULT_BOOL_VALUE = false;
@@ -69,8 +70,6 @@ export class Encoder implements IVisitor {
     }
 
     visitBlock(node: Block, args: any) {
-        // NOTE: Fixes a bug where identifiers were not stored correctly, but unsure why...
-        this.emit(Machine.PUSHop, 0, 0, 3);
         node.statements.accept(this, args);
         return null;
     }
@@ -205,15 +204,17 @@ export class Encoder implements IVisitor {
         });
 
         node.declarations = node.declarations ?? [];
-        node.declarations.forEach((declaration) =>
-            declaration.accept(this, undefined)
-        );
+        node.declarations.forEach((declaration) => {
+            declaration.accept(this, undefined);
+        });
 
         // Skipping over link data
         this.allocationTracker.incrementDisplacement(
             this.allocationTracker.currentLevel,
             Machine.linkDataSize
         );
+
+        // Function might not have a return
         let hasReturn = false;
         node.statments.statements.forEach((statement) => {
             if (statement instanceof RetStatement) {
@@ -256,20 +257,6 @@ export class Encoder implements IVisitor {
             this.allocationTracker.currentLevel,
             nextDisplacement
         );
-
-        if (this.allocationTracker.currentLevel == 0) {
-            // Global variable. Address i relative displacement to stack base register.
-            console.log(
-                `Storing IDENTIFIER ${node.identifier.spelling} at REGISTER ${Machine.SBr} with DISPLACEMENT of ${nextDisplacement}`
-            );
-            this.emit(Machine.STOREop, size, Machine.SBr, nextDisplacement);
-        } else {
-            // Local variable in scope. Address is relative displacement to the local base register
-            console.log(
-                `Storing IDENTIFIER ${node.identifier.spelling} at REGISTER ${Machine.LBr} with DISPLACEMENT of ${nextDisplacement}`
-            );
-            this.emit(Machine.STOREop, size, Machine.LBr, nextDisplacement);
-        }
     }
 
     visitIntegerLiteralExpression(node: IntLiteralExpression, args: any) {
@@ -438,6 +425,16 @@ export class Encoder implements IVisitor {
     visitVariableExpression(node: VariableExpression, args: any) {
         const pushValueToStack = args;
 
+        const allocation = this.allocationTracker.getActiveAllocation(
+            node.identifier.spelling
+        );
+
+        if (!allocation) {
+            throw new CompilerError(
+                `Allocation ${node.identifier} has not been tracked properly`
+            );
+        }
+
         const address = node.declaration?.address!;
         const register = this.displayRegister(
             this.allocationTracker.currentLevel,
@@ -474,7 +471,7 @@ export class Encoder implements IVisitor {
         }
     }
     visitCallExpression(node: CallExpression, args: any) {
-        throw new Error("Method not implemented.");
+        // throw new Error("Method not implemented.");
     }
     visitExpressionList(node: ExpressionList, args: any) {
         throw new Error("Method not implemented.");
@@ -507,7 +504,6 @@ export class Encoder implements IVisitor {
         }
 
         if (!n && op === 4) {
-            console.log("HERE NO N");
             console.log(new Error().stack);
         }
 

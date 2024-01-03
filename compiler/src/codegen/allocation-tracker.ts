@@ -3,6 +3,7 @@ import { ExpressionType } from "../checker/expression-types";
 export type Allocation = {
     identifier: string;
     displacement: number;
+    level: number;
     type?: ExpressionType;
     wordSize?: number;
 };
@@ -21,14 +22,15 @@ export class AllocationTracker {
         if (!this.allocations.has(this.currentLevel)) {
             this.allocations.set(this.currentLevel, []);
         }
-        if (!this.displacements.has(this.currentLevel)) {
-            this.displacements.set(this.currentLevel, 0);
-        }
+
+        this.displacements.set(this.currentLevel, 0);
     }
 
     allocate(id: string, type?: ExpressionType, wordSize?: number): number {
         if (!this.allocations.has(this.currentLevel)) {
             this.allocations.set(this.currentLevel, []);
+        }
+        if (!this.displacements.has(this.currentLevel)) {
             this.displacements.set(this.currentLevel, 0);
         }
         this.allocations.set(this.currentLevel, [
@@ -36,6 +38,7 @@ export class AllocationTracker {
             {
                 identifier: id,
                 displacement: this.displacements.get(this.currentLevel)!,
+                level: this.currentLevel,
                 type,
                 wordSize,
             },

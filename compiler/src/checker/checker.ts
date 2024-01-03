@@ -32,6 +32,7 @@ import {
 import { Type } from "../ast/types";
 import { IVisitor } from "../ast/visitor";
 import { Token, TokenKind } from "../scanner/tokens";
+import { DEFAULT_INT_VALUE } from "../type-defaults";
 import { CompilerError } from "./exceptions";
 import { ExpressionType, ExpressionTypeKind } from "./expression-types";
 import { IdentificationTable } from "./identification-table";
@@ -62,8 +63,7 @@ export class Checker implements IVisitor {
     }
 
     visitExpressionResultStatement(node: ExpressionResult, args: any) {
-        node.accept(this, args);
-        return null;
+        return node.accept(this, args);
     }
 
     visitIffStatement(node: IffStatement, args: any) {
@@ -178,29 +178,60 @@ export class Checker implements IVisitor {
         const id = node.identifier.accept(this, args);
         this.idTable.declare(id, node);
         this.idTable.openScope();
+        if (!node.declarations) {
+            node.declarations = [];
+        }
         node.params.forEach((param, idx) => {
             // Params of function are treated as variables inside the function
             let type = node.paramTypes[idx];
+            let expresionType: ExpressionType | undefined = undefined;
             let expression;
             // We need this so the check can perform type checking in call expression
             switch (type.spelling) {
                 case "int":
                     expression = new IntLiteralExpression(
-                        new IntegerLiteral("0")
+                        new IntegerLiteral(DEFAULT_INT_VALUE)
                     );
+                    expresionType = {
+                        depth: 0,
+                        kind: ExpressionTypeKind.INTEGER,
+                        spelling: "int",
+                    };
+                    const paramDeclaration = new VariableDeclaration(
+                        param,
+                        new IntLiteralExpression(
+                            new IntegerLiteral(DEFAULT_INT_VALUE)
+                        ),
+                        undefined,
+                        undefined,
+                        undefined,
+                        {
+                            depth: 0,
+                            kind: ExpressionTypeKind.INTEGER,
+                            spelling: "int",
+                        }
+                    );
+
+                    node.declarations!.push(paramDeclaration);
+                    this.idTable.declare(
+                        paramDeclaration.identifier.spelling,
+                        paramDeclaration
+                    );
+
                     break;
                 case "bol":
                     expression = new BooleanLiteralExpression(
                         new BooleanLiteral("tru")
                     );
+                    expresionType = {
+                        depth: 0,
+                        kind: ExpressionTypeKind.BOOLEAN,
+                        spelling: "bol",
+                    };
                     break;
                 default:
                     break;
             }
-            this.idTable.declare(
-                param.spelling,
-                new VariableDeclaration(param)
-            );
         });
         node.params.forEach((param) => param.accept(this, args));
         node.paramTypes.forEach((paramType) => paramType.accept(this, args));
@@ -331,8 +362,10 @@ export class Checker implements IVisitor {
             }
         } else if (token.isCompareOperator()) {
             if (
-                operand1.kind === ExpressionTypeKind.INTEGER &&
-                operand2.kind === ExpressionTypeKind.INTEGER
+                (operand1.kind === ExpressionTypeKind.INTEGER &&
+                    operand2.kind === ExpressionTypeKind.INTEGER) ||
+                (operand1.kind === ExpressionTypeKind.BOOLEAN &&
+                    operand2.kind === ExpressionTypeKind.BOOLEAN)
             ) {
                 return {
                     kind: ExpressionTypeKind.BOOLEAN,
@@ -340,6 +373,7 @@ export class Checker implements IVisitor {
                 } as ExpressionType;
             }
         }
+
         throw new CompilerError(
             `operatior ${token.spelling} can not be applies to ${operand1.spelling} of kind ${operand1.kind} and ${operand2.spelling} of kind ${operand2.kind}`
         );
