@@ -51,7 +51,10 @@ export class Parser {
         const block = this.parseBlock();
 
         if (this.currentTerminal.kind != TokenKind.EOF) {
-            this.reportError("incorrectly terminated program");
+            console.log(this.scanner.getRemainingSource());
+            this.reportError(
+                `Incorrectly terminated program. Expected EOF, but got ${this.currentTerminal.kind}`
+            );
         }
         return new Program(block);
     }

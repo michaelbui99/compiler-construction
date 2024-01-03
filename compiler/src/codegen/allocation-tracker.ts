@@ -77,6 +77,10 @@ export class AllocationTracker {
         return undefined;
     }
 
+    peekNextAddress(): number {
+        return this.nextDisplacement;
+    }
+
     getAllocations(level: number): Allocation[] {
         if (!this.allocations.has(level)) {
             return [];

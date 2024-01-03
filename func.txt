@@ -1,5 +1,8 @@
 fun calcSum a int b int thn
-    ret a add b %
+    let c a add b %
+    out c %
 end
 
-out calcSum 1 2 %
+out 4242 %
+
+calcSum 1 2 

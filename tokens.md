@@ -12,6 +12,8 @@ StringLitteral ::= "(.\*)"
 
 Operator ::= add | sub | div | mul | mod | eql | grt | lst | and | orr | not
 
+Type ::= int | bol | str | arr
+
 ## Keywords
 
 -   let

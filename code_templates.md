@@ -1,8 +1,14 @@
 ## Notes
 
-Execute = Execute Instructions
-Evaluate = Evaluate Expression
+Execute = Execute Instructions, but don't expand or shrink the stack
+
+Evaluate = Evaluate Expression and push result on to the stack top.
+
 Elaborate = Elaborate by expanding the stack and make space for any variables and constants
+
+Fetch = Push the value of the constant or variable on to the stack top.
+
+Asssign = Pop value from stack and store it in variable.
 
 annotations:
 
@@ -34,102 +40,173 @@ L1 -> Encloses LB
 
 L2 -> Encloses L1, L2(L1(LB))
 
-LOAD d[LB] -> Fetch variable with varoffset d in local scope
+LOAD d[LB] -> Fetch variable with displacement d in local scope
 
-LOAD d[L1] -> Fetch variable with varoffset d in L1 scope (Caller of LB)
+LOAD d[L1] -> Fetch variable with displacement d in L1 scope (Caller of LB)
 
 LOAD d[L2] -> Fetch variable with offset d in L2 scope (Caller of L1)
 
 # Code Templates
 
-Run\[[Program]]=
+## **Run\[[Program]]=**
 
 > Execute\[[Block]]
 > HALT
 
-Execute\[[Block]]
+## **Execute\[[Block]] =**
 
 > Execute\[[Statements]]
 
-Execute\[[Statements]] =
+## **Execute\[[Statements]] =**
 
 > Execute\[[Statement1]]
+
 > Execute\[[Statement2]]
+
 > Execute\[[Statement3]]
+
 > ...
+
 > Execute\[[StatementN]]
 
-Execute\[[Expression]] =
+## **Execute\[[Expression]] =**
 
 > Evaluate\[[Expression]]
+
 > POP 1
 
-Execute\[[**iff** ExpressionResult **thn** $Statements_1$ **els** $Statements_2$]] =
+## **Execute\[[**iff** ExpressionResult **thn** $Statements_1$ **els** $Statements_2$]] =**
 
 > Evaluate\[[ExpressionResult]]
+
 > JUMPIF (0) f
+
 > Execute\[[$Statements_1$]]
+
 > JUMP d
+
 > f: Execute\[[$Statements_2$]]
+
 > d:
 
-Execute\[[**iff** ExpressionResult **thn** Statements **end**]]=
+## **Execute\[[**iff** ExpressionResult **thn** Statements **end**]]=**
 
 > t: Evalute\[[ExpressionResult]]
+
 > JUMPIF (0) d
+
 > Execute\[[Statements]]
-> JUMP t
+
 > d:
 
-Execute\[[**for** ExpressionResult **thn** Statements **end**]]=
+## **Execute\[[**for** ExpressionResult **thn** Statements **end**]]=**
 
 > t: Evalute\[[ExpressionResult]]
+
 > JUMPIF (0) d
+
 > Execute\[[Statements]]
+
 > JUMP t
+
 > d:
 
-Execute\[[**ass** **Identifier** (Ø | Index) ExpressionResult **%**]] =
+## **Execute[[**out** ExpressionResult **%**]]=**
+
+int and boolean case
+
+> Evaluate ExpressionResult
+
+> putint
+
+> puteol
+
+## <strong>Execute[[**ass** **Identifier** ExpressionResult **%**]]=<strong>
 
 > Evaluate\[[ExpressionResult]]
-> STORE varoffset\[varreg]
-> LOAD varoffset\[varreg]
 
-Execute\[[**ret** ExpressionResult **%**]] =
+> STORE (resultSize) displacement\[varreg]
 
-> RETURN (1) paramsize
+## **Execute\[[**ret** ExpressionResult **%**]] =**
 
-Execute\[[**brk**]]=
+> Evaluate\[[ExpressionResult]]
 
-> JUMP d
+> RETURN resultSize paramSize
 
-Execute\[[**get** **Identifier** **%**]] =
+## **Execute\[[**brk**]]=**
 
-<!-- We handle the int case first to simplify everything -->
+root level case
 
-> getint varoffset\[varreg]
+> HALT
 
-Elaborate\[[**fun** **Identifier** (**Identifier** (**Type** | **arr**))\* **thn** Statements **end**]] =
+## Execute\[[**get** **Identifier** **%**]] =
+
+int case
+
+> getint displacement\[varreg]
+
+## Elaborate\[[**fun** **Identifier** (**Identifier** (**Type** | **arr**))\* **thn** Statements **end**]] =
 
 > Elaborate\[[**Identifier1**]]
+
 > Elaborate\[[**Identifier2**]]
+
 > Elaborate\[[**Identifier3**]]
+
 > ...
+
 > Elaborate\[[**IdentifierN**]]
 
 > Execute\[[Statements]]
-> RETURN (1) paramsize
 
-Elaborate\[[**let** **Identifier** ExpressionResult **%**]]
+> RETURN resultSize paramSize
+
+## Elaborate\[[**let** **Identifier** ExpressionResult **%**]]
 
 > Evaluate\[[ExpressionResult]]
-> STORE varoffset[varreg]
+> Assign[[Identifier]]
 
-Elaborate\[[**let** **Identifier** **arr** Index **%**]]
+## Elaborate\[[**let** **Identifier** **arr** Index **%**]]
 
 > PUSH
-> STORE varoffset[varreg]
+> STORE displacement[varreg]
 
-Evaluate \[[**Identifier**]] =
+## Evaluate \[[**Identifier**]] =
 
-> LOAD varoffset\[varreg]
+> LOAD (size) displacement\[varreg]
+
+## Evaluate [[**Identifier** ExpressionList]]
+
+> Evaluate [[ExpressionList]]
+
+> CALL (funcreg) funcadr[CB]
+
+## Evaluate [[Expression1 **Operator** Expression2]]
+
+> Evaluate [[Expression1]]
+
+> Evauluate [[Expression2]]
+
+> CALL Operator
+
+## Evaluate [[IntegerLiteral]]
+
+> LOADL Literal
+
+## Evaluate [[BooleanLiteral]]
+
+true
+
+> LOADL 1
+
+## Evaluate [[BooleanLiteral]]
+
+false
+
+> LOADL 0
+
+## Assign[[**Identifier**]] =
+
+> STORE displacement[varreg]
+
+> LOAD (size) displacement[varreg]

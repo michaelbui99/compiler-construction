@@ -7,17 +7,17 @@ Block ::= Statements
 Statements ::= (Statement)\*
 
 Statement ::= ExpressionResult
-| Declaration
-| **iff** ExpressionResult **thn** Statements (Ø | **els** Statements )**end**
-| **for** ExpressionResult **thn** Statements **end**
-| **out** ExpressionResult **%**
-| **ass** **Identifier** (Ø | Index) ExpressionResult **%**
-| **ret** ExpressionResult **%**
-| **brk** **%**
+| Declaration<br>
+| **iff** ExpressionResult **thn** Statements (Ø | **els** Statements )**end**<br>
+| **for** ExpressionResult **thn** Statements **end**<br>
+| **out** ExpressionResult **%**<br>
+| **ass** **Identifier** (Ø | Index) ExpressionResult **%**<br>
+| **ret** ExpressionResult **%**<br>
+| **brk** **%**<br>
 
-Declaration ::= **get** **Identifier** **%**
-| **fun** **Identifier** (**Identifier** (**Type** | **arr**) )\* **thn** Statements **end**
-| **let** **Identifier** (**arr** Index | ExpressionList) | ExpressionResult **%**
+Declaration ::= **get** **Identifier** **%**<br>
+| **fun** **Identifier** (**Identifier** (**Type** | **arr**) )\* **thn** Statements **end** <br>
+| **let** **Identifier** (**arr** Index | ExpressionList) | ExpressionResult **%**<br>
 
 ExpressionResult ::= Expression6 (**BooleanOperator** Expression6 )\*
 
@@ -31,11 +31,11 @@ AddOperator ::= **add** | **sub**
 
 MultOperator ::= **mul** | **div** | **mod**
 
-PrimaryExpression ::= **run** ExpressionResult **end**
-| **IntegerLiteral**
-| **BooleanLiteral**
-| **StringLiteral**
-| **Identifier** (Ø | ExpressionList | Index)
+PrimaryExpression ::= **run** ExpressionResult **end**<br>
+| **IntegerLiteral**<br>
+| **BooleanLiteral**<br>
+| **StringLiteral**<br>
+| **Identifier** (Ø | ExpressionList | Index)<br>
 
 Expression6 ::= Expression5 | Expression5 **eql** Expression5
 

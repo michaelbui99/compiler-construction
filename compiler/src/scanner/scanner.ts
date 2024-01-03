@@ -30,6 +30,11 @@ export class Scanner {
         return new Token(this.scanToken(), this.currentSpelling);
     }
 
+    public getRemainingSource(): string {
+        console.log(this.sourceCode);
+        return this.sourceCode.substring(this.currentReadIdx);
+    }
+
     private scanToken(): TokenKind {
         if (this.isDigit(this.currentChar)) {
             while (this.isDigit(this.currentChar)) {

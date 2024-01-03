@@ -172,7 +172,6 @@ export class Encoder implements IVisitor {
     }
 
     visitBreakStatement(node: BreakStatement, args: any) {
-        // throw new Error("Method not implemented.");
         // Syntax allow break anywhere.
         // Break at root level / global scope just halts the program.
         if (this.allocationTracker.currentLevel === 0) {
@@ -185,9 +184,13 @@ export class Encoder implements IVisitor {
     }
 
     visitFunctionDeclaration(node: FunctionDeclaration, args: any) {
+        const nextAddress = this.allocationTracker.allocate(
+            node.identifier.spelling
+        );
+
         node.address = new Address(
             this.allocationTracker.currentLevel,
-            this.nextAddress
+            nextAddress
         );
 
         // Begin new scope and push params onto the stack
@@ -203,12 +206,20 @@ export class Encoder implements IVisitor {
             }
         });
 
+        const before = this.allocationTracker.peekNextAddress();
+        this.emit(Machine.JUMPop, 0, Machine.CB, 0);
+
         node.declarations = node.declarations ?? [];
         node.declarations.forEach((declaration) => {
             declaration.accept(this, undefined);
         });
 
-        // Skipping over link data
+        this.backpatchJumpAddress(
+            before,
+            this.allocationTracker.peekNextAddress()
+        );
+
+        // Local data should be stored after link data (static link, dynamic link, return address).
         this.allocationTracker.incrementDisplacement(
             this.allocationTracker.currentLevel,
             Machine.linkDataSize
@@ -239,7 +250,6 @@ export class Encoder implements IVisitor {
             case ExpressionTypeKind.BOOLEAN:
             case ExpressionTypeKind.INTEGER:
                 size = 1;
-                // Pushes value onto stack
                 node.expression?.accept(this, true);
                 break;
             case ExpressionTypeKind.STRING:
@@ -257,6 +267,34 @@ export class Encoder implements IVisitor {
             this.allocationTracker.currentLevel,
             nextDisplacement
         );
+
+        if (this.currentLevel === 0) {
+            this.emit(
+                Machine.STOREop,
+                size,
+                Machine.SBr,
+                node.address.displacement
+            );
+            this.emit(
+                Machine.LOADop,
+                size,
+                Machine.SBr,
+                node.address.displacement
+            );
+        } else {
+            this.emit(
+                Machine.LOADop,
+                size,
+                Machine.LBr,
+                node.address.displacement
+            );
+            this.emit(
+                Machine.LOADop,
+                size,
+                Machine.LBr,
+                node.address.displacement
+            );
+        }
     }
 
     visitIntegerLiteralExpression(node: IntLiteralExpression, args: any) {
@@ -471,10 +509,30 @@ export class Encoder implements IVisitor {
         }
     }
     visitCallExpression(node: CallExpression, args: any) {
-        // throw new Error("Method not implemented.");
+        const keepResultOnStack = args as boolean;
+
+        // Push params to stack before call
+        node.args.accept(this, undefined);
+
+        const address = node.declaration!.address;
+        const register = this.displayRegister(
+            this.allocationTracker.currentLevel,
+            address!.level
+        );
+
+        this.emit(Machine.CALLop, register, Machine.CB, address!.displacement);
+
+        if (!keepResultOnStack) {
+            this.emit(Machine.POPop, 0, 0, 1);
+        }
+
+        return null;
     }
     visitExpressionList(node: ExpressionList, args: any) {
-        throw new Error("Method not implemented.");
+        const pushValueToStack = true;
+        node.expressions.forEach((expression) =>
+            expression.accept(this, pushValueToStack)
+        );
     }
     visitArrayExpression(node: ArrayExperession, args: any) {
         throw new Error("Method not implemented.");
