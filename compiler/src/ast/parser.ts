@@ -182,6 +182,7 @@ export class Parser {
         let elseStatements = undefined;
         // @ts-ignore
         if (this.currentTerminal.kind === TokenKind.ELSE) {
+            this.accept(TokenKind.ELSE);
             elseStatements = this.parseStatements();
         }
         this.accept(TokenKind.END);

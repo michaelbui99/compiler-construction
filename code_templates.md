@@ -51,6 +51,7 @@ LOAD d[L2] -> Fetch variable with offset d in L2 scope (Caller of L1)
 ## **Run\[[Program]]=**
 
 > Execute\[[Block]]
+
 > HALT
 
 ## **Execute\[[Block]] =**
@@ -126,6 +127,14 @@ int and boolean case
 > Evaluate\[[ExpressionResult]]
 
 > STORE (resultSize) displacement\[varreg]
+
+## <strong>Execute[[**ass** **Identifier** Index ExpressionResult **%**]]=<strong>
+
+Arrays can only contain integers, so the result is always 1 word size.
+
+> Evaluate\[[ExpressionResult]]
+
+> STORE (1) displacement + index\[varreg]
 
 ## **Execute\[[**ret** ExpressionResult **%**]] =**
 

@@ -3,8 +3,8 @@ import fs from "fs";
 export class Instruction {
     op: number; // Opcode;
     r: number; // RegisterNumber;
-    n: number; // Length;
-    d: number; // Operand;
+    n: number; // Length / size;
+    d: number; // Operand / displacements;
 
     constructor() {
         this.op = 0;

@@ -6,6 +6,7 @@ import { Scanner } from "./scanner/scanner";
 import { exec } from "child_process";
 import { Encoder } from "./codegen/encoder";
 import { Checker } from "./checker/checker";
+import { CodeEncoder } from "./codegen/encoder2";
 
 // const TAM_JAR_PATH = path.resolve(__dirname, "vm", "TAM.jar");
 

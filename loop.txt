@@ -1,0 +1,5 @@
+let i 0%
+out i %
+let next run i add 1 end%
+ass i next % 
+out i %

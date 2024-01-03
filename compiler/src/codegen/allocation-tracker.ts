@@ -1,4 +1,5 @@
 import { ExpressionType } from "../checker/expression-types";
+import { Address } from "./address";
 
 export type Allocation = {
     identifier: string;
@@ -51,6 +52,11 @@ export class AllocationTracker {
             this.displacements.get(this.currentLevel)! + (wordSize ?? 1)
         );
         return allocatedAt;
+    }
+
+    allocateAddress(id: string, type?: ExpressionType, size?: number): Address {
+        const displacement = this.allocate(id, type, size);
+        return new Address(this.currentLevel, displacement);
     }
 
     incrementDisplacement(level: number, amount: number) {

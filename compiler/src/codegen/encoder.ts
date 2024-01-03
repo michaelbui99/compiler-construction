@@ -85,47 +85,43 @@ export class Encoder implements IVisitor {
     }
 
     visitIffStatement(node: IffStatement, args: any) {
-        this.allocationTracker.beginNewScope();
         const pushValueToStack = true;
-        // We need result of expression on the stack.
         node.expression.accept(this, pushValueToStack);
-
-        // We don't know where to jump yet since we don't know the amount of instructions, so just put placeholder and store where we currently are.
-        let thenJumpAddress = this.nextAddress;
-        // Machine[jump1adr] is now equal to this jump instruction
-        this.emit(Machine.JUMPIFop, 0, Machine.CBr, 0);
-        // Can modify address, so we need to backpatch later.
-        node.thnPart.accept(this, null);
-        let elseJumpAddress = this.nextAddress;
-        // 0 is just placeholder for now, so actually don't jump.
-        // Later Later we backpatch how much to actually jump.
-        this.emit(Machine.JUMPop, 0, Machine.CBr, 0);
-
         if (node.elsPart) {
-            node.elsPart.accept(this, null);
+            // We need to generate a jump, but we don't know to where yet
+            // use 0 as placeholder for now.
+            const jumpF = this.nextAddress;
+            this.emit(Machine.JUMPIFop, 0, Machine.CBr, 0);
+            node.thnPart.accept(this, args);
+            // We don't know how where the else part ends, so we patch it later
+            const jumpD = this.nextAddress;
+            this.emit(Machine.JUMPop, 0, Machine.CBr, 0);
+            const f = this.nextAddress;
+            this.backpatchJumpAddress(jumpF, f);
+
+            node.elsPart.accept(this, args);
+            const d = this.nextAddress;
+            this.backpatchJumpAddress(jumpD, d);
+        } else {
+            const jumpD = this.nextAddress;
+            this.emit(Machine.JUMPIFop, 0, Machine.CBr, 0);
+            node.thnPart.accept(this, args);
+            const d = this.nextAddress;
+            this.backpatchJumpAddress(jumpD, d);
         }
-
-        this.backpatchJumpAddress(thenJumpAddress, this.nextAddress);
-
-        if (node.elsPart) {
-            this.backpatchJumpAddress(elseJumpAddress, this.nextAddress);
-        }
-
-        this.allocationTracker.endScope();
     }
+
     visitForStatement(node: ForStatement, args: any) {
-        const startAddress = this.nextAddress;
+        const t = this.nextAddress;
         const pushValueToStack = true;
         node.expression.accept(this, pushValueToStack);
 
-        const jumpAddress = this.nextAddress;
+        const jumpD = this.nextAddress;
         this.emit(Machine.JUMPIFop, 0, Machine.CBr, 0);
-
-        node.statements.accept(this, null);
-        this.emit(Machine.JUMPop, 0, Machine.CBr, startAddress);
-
-        this.backpatchJumpAddress(jumpAddress, this.nextAddress);
-        return undefined;
+        node.statements.accept(this, args);
+        this.emit(Machine.JUMPop, 0, Machine.CBr, t);
+        const d = this.nextAddress;
+        this.backpatchJumpAddress(jumpD, d);
     }
 
     visitOutStatement(node: OutStatement, args: any) {
@@ -257,15 +253,10 @@ export class Encoder implements IVisitor {
                 break;
         }
 
-        const nextDisplacement = this.allocationTracker.allocate(
+        node.address = this.allocationTracker.allocateAddress(
             node.identifier.spelling,
             node.type,
             size
-        );
-
-        node.address = new Address(
-            this.allocationTracker.currentLevel,
-            nextDisplacement
         );
 
         if (this.currentLevel === 0) {
@@ -275,21 +266,9 @@ export class Encoder implements IVisitor {
                 Machine.SBr,
                 node.address.displacement
             );
-            this.emit(
-                Machine.LOADop,
-                size,
-                Machine.SBr,
-                node.address.displacement
-            );
         } else {
             this.emit(
-                Machine.LOADop,
-                size,
-                Machine.LBr,
-                node.address.displacement
-            );
-            this.emit(
-                Machine.LOADop,
+                Machine.STOREop,
                 size,
                 Machine.LBr,
                 node.address.displacement
@@ -559,10 +538,6 @@ export class Encoder implements IVisitor {
     private emit(op: number, n: number, r: number, d: number) {
         if (n > 255) {
             console.log(`Operand too long`);
-        }
-
-        if (!n && op === 4) {
-            console.log(new Error().stack);
         }
 
         const instruction = new Instruction();
