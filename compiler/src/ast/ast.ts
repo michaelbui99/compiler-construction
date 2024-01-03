@@ -1,11 +1,7 @@
-import { RuntimeEntity } from "../codegen/runtime-entity";
 import { IVisitor } from "./visitor";
 
 export abstract class AST {
-    entity?: RuntimeEntity;
-    constructor() {
-        this.entity = undefined;
-    }
+    constructor() {}
 
     abstract accept(visitor: IVisitor, arg: any): any;
 }

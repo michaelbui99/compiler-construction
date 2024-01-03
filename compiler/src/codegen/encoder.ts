@@ -268,9 +268,21 @@ export class Encoder implements IVisitor {
                 Machine.SBr,
                 node.address.displacement
             );
+            this.emit(
+                Machine.LOADop,
+                size,
+                Machine.SBr,
+                node.address.displacement
+            );
         } else {
             this.emit(
                 Machine.STOREop,
+                size,
+                Machine.LBr,
+                node.address.displacement
+            );
+            this.emit(
+                Machine.LOADop,
                 size,
                 Machine.LBr,
                 node.address.displacement
