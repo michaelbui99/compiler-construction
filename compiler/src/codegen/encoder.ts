@@ -118,8 +118,10 @@ export class Encoder implements IVisitor {
 
         const jumpD = this.nextAddress;
         this.emit(Machine.JUMPIFop, 0, Machine.CBr, 0);
+
         node.statements.accept(this, args);
         this.emit(Machine.JUMPop, 0, Machine.CBr, t);
+
         const d = this.nextAddress;
         this.backpatchJumpAddress(jumpD, d);
     }
