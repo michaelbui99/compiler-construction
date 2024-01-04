@@ -254,33 +254,13 @@ export class Encoder implements IVisitor {
             size
         );
 
-        if (this.currentLevel === 0) {
-            this.emit(
-                Machine.STOREop,
-                size,
-                Machine.SBr,
-                node.address.displacement
-            );
-            this.emit(
-                Machine.LOADop,
-                size,
-                Machine.SBr,
-                node.address.displacement
-            );
-        } else {
-            this.emit(
-                Machine.STOREop,
-                size,
-                Machine.LBr,
-                node.address.displacement
-            );
-            this.emit(
-                Machine.LOADop,
-                size,
-                Machine.LBr,
-                node.address.displacement
-            );
-        }
+        const register = this.displayRegister(
+            this.allocationTracker.currentLevel,
+            node.address.level
+        );
+
+        this.emit(Machine.STOREop, size, register, node.address.displacement);
+        this.emit(Machine.LOADop, size, register, node.address.displacement);
     }
 
     visitIntegerLiteralExpression(node: IntLiteralExpression, args: any) {
