@@ -13,7 +13,7 @@
         "clean": "rimraf ./dist",
         "test": "jest",
         "prebuild": "npm run clean",
-        "build": "tsc && cp -r ./src/vm ./dist/src/vm",
+        "build": "tsc && node ./build/copy.js ./src/vm ./dist/src/vm",
         "prestart": "npm run build",
         "start": "node ./dist/src/index.js",
         "preexporter": "npm run build",

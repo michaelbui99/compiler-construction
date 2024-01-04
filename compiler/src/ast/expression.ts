@@ -16,7 +16,7 @@ export abstract class ExpressionResult extends AST {
     }
 }
 
-export class ExpressionList extends ExpressionResult {
+export class ExpressionList extends AST{
     constructor(public expressions: ExpressionResult[] = []) {
         super();
         this.expressions = expressions ?? [];
