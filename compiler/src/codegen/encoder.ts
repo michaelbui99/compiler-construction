@@ -182,6 +182,8 @@ export class Encoder implements IVisitor {
     }
 
     visitFunctionDeclaration(node: FunctionDeclaration, args: any) {
+        const jumpG = this.nextAddress;
+        this.emit(Machine.JUMPop, 0, Machine.CB, 0);
         node.address = new Address(
             this.allocationTracker.currentLevel,
             this.nextAddress
@@ -199,7 +201,10 @@ export class Encoder implements IVisitor {
                     break;
             }
         });
-
+        this.allocationTracker.incrementDisplacement(
+            this.allocationTracker.currentLevel,
+            -paramSize
+        );
         node.declarations = node.declarations ?? [];
         node.declarations.forEach((declaration) => {
             declaration.accept(this, undefined);
@@ -221,6 +226,8 @@ export class Encoder implements IVisitor {
             this.emit(Machine.RETURNop, 0, 0, paramSize);
             this.allocationTracker.endScope();
         }
+        const g = this.nextAddress;
+        this.backpatchJumpAddress(jumpG, g);
     }
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
