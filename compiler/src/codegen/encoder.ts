@@ -128,7 +128,7 @@ export class Encoder implements IVisitor {
 
     visitOutStatement(node: OutStatement, args: any) {
         const pushValueToStack = true;
-        const exprs = node.expression.accept(this, pushValueToStack);
+        node.expression.accept(this, pushValueToStack);
         const type = node.expressionType?.kind;
         console.log("Performing out");
         switch (type) {
@@ -205,15 +205,6 @@ export class Encoder implements IVisitor {
             declaration.accept(this, undefined);
         });
 
-        const before = this.nextAddress;
-        this.emit(Machine.JUMPop, 0, Machine.CB, 0);
-
-        // Local data should be stored after link data (static link, dynamic link, return address).
-        this.allocationTracker.incrementDisplacement(
-            this.allocationTracker.currentLevel,
-            Machine.linkDataSize
-        );
-
         // Function might not have a return
         let hasReturn = false;
         node.statments.statements.forEach((statement) => {
@@ -221,7 +212,7 @@ export class Encoder implements IVisitor {
                 statement.accept(this, paramSize);
                 hasReturn = true;
             } else {
-                statement.accept(this, null);
+                statement.accept(this, undefined);
             }
         });
 
@@ -230,11 +221,10 @@ export class Encoder implements IVisitor {
             this.emit(Machine.RETURNop, 0, 0, paramSize);
             this.allocationTracker.endScope();
         }
-
-        this.backpatchJumpAddress(before, this.nextAddress);
     }
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
+        const pushResultToStack = args as boolean;
         let size: number = 1;
         const type = node.type!;
         switch (type.kind) {
@@ -260,7 +250,14 @@ export class Encoder implements IVisitor {
         );
 
         this.emit(Machine.STOREop, size, register, node.address.displacement);
-        this.emit(Machine.LOADop, size, register, node.address.displacement);
+        if (pushResultToStack) {
+            this.emit(
+                Machine.LOADop,
+                size,
+                register,
+                node.address.displacement
+            );
+        }
     }
 
     visitIntegerLiteralExpression(node: IntLiteralExpression, args: any) {
