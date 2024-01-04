@@ -50,17 +50,3 @@ Expression2 ::= PrimaryExpression | **not** PrimaryExpression | **len** PrimaryE
 Index ::= (#(**InterLitteral**)|(**Identifier**))+
 
 Type ::= **bol** | **int** | **str**
-
-<!-- ```
-NOTE: Indexing arrays:
-
-let myArr arr 1 2 3 4
-let x myArr #0 --- x is now 1
-ass myArr #0 2
-out myArr #0 --- prints 2
-
-len myArr
-
-6 * 5
-
-``` -->

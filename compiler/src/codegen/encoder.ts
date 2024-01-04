@@ -182,13 +182,9 @@ export class Encoder implements IVisitor {
     }
 
     visitFunctionDeclaration(node: FunctionDeclaration, args: any) {
-        const nextAddress = this.allocationTracker.allocate(
-            node.identifier.spelling
-        );
-
         node.address = new Address(
             this.allocationTracker.currentLevel,
-            nextAddress
+            this.nextAddress
         );
 
         // Begin new scope and push params onto the stack
@@ -204,18 +200,13 @@ export class Encoder implements IVisitor {
             }
         });
 
-        const before = this.allocationTracker.peekNextAddress();
-        this.emit(Machine.JUMPop, 0, Machine.CB, 0);
-
         node.declarations = node.declarations ?? [];
         node.declarations.forEach((declaration) => {
             declaration.accept(this, undefined);
         });
 
-        this.backpatchJumpAddress(
-            before,
-            this.allocationTracker.peekNextAddress()
-        );
+        const before = this.nextAddress;
+        this.emit(Machine.JUMPop, 0, Machine.CB, 0);
 
         // Local data should be stored after link data (static link, dynamic link, return address).
         this.allocationTracker.incrementDisplacement(
@@ -239,6 +230,8 @@ export class Encoder implements IVisitor {
             this.emit(Machine.RETURNop, 0, 0, paramSize);
             this.allocationTracker.endScope();
         }
+
+        this.backpatchJumpAddress(before, this.nextAddress);
     }
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
