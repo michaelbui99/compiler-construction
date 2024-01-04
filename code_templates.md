@@ -17,6 +17,8 @@ annotations:
 -   f: -> false
 
 Notes:
+Static link -> Where was the function declared?
+Dyanmic link -> Where was the funcion called from?
 
 ```
 function c() {
@@ -156,6 +158,8 @@ int case
 
 ## Elaborate\[[**fun** **Identifier** (**Identifier** (**Type** | **arr**))\* **thn** Statements **end**]] =
 
+> JUMP g
+
 > Elaborate\[[**Identifier1**]]
 
 > Elaborate\[[**Identifier2**]]
@@ -169,6 +173,8 @@ int case
 > Execute\[[Statements]]
 
 > RETURN resultSize paramSize
+
+> g:
 
 ## Elaborate\[[**let** **Identifier** ExpressionResult **%**]]
 

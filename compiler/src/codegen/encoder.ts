@@ -201,6 +201,8 @@ export class Encoder implements IVisitor {
                     break;
             }
         });
+        // Params are accessed using a negative displacement relative
+        // to current stack frame due to routine protocol
         this.allocationTracker.incrementDisplacement(
             this.allocationTracker.currentLevel,
             -paramSize
