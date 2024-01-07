@@ -65,6 +65,19 @@ const operators = new Map<string, TokenKind>([
     ["len", TokenKind.OPERATOR],
 ]);
 
+export type OperatorToken =
+    | "add"
+    | "sub"
+    | "div"
+    | "mul"
+    | "mod"
+    | "eql"
+    | "grt"
+    | "lst"
+    | "and"
+    | "orr"
+    | "not"
+    | "len";
 export class Token {
     kind: TokenKind;
     spelling: string;
@@ -86,7 +99,6 @@ export class Token {
         return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "and",
             "orr",
-            "eql",
         ]);
     }
 
@@ -94,6 +106,7 @@ export class Token {
         return this.isKindAndHasEitherSpelling(TokenKind.OPERATOR, [
             "grt",
             "lst",
+            "eql",
         ]);
     }
 

@@ -1,0 +1,21 @@
+let a 4040%
+let b 4242%
+let c 4343%
+let d 1321%
+let e 4545%
+let first 10 %
+let second 2 %
+
+out a %
+out b %
+out c %
+out d %
+out e %
+out first%
+out second%
+
+let test a add b%
+out test %
+
+ass test 2 %
+out test %

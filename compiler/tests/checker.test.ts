@@ -222,7 +222,9 @@ describe("Checker tests", () => {
     test("binary operations are not possible on non binary variables", () => {
         const source = "out tru and 5 %";
         expect(checkerHelper(source)).toThrow(
-            new CompilerError("operatior and can not be applies to tru and 5")
+            new CompilerError(
+                "operatior and can not be applies to tru of kind BOOLEAN and 5 of kind INTEGER"
+            )
         );
     });
 
@@ -256,7 +258,7 @@ describe("Checker tests", () => {
         const source = 'let myStr "hallo" and " world"%';
         expect(checkerHelper(source)).toThrow(
             new CompilerError(
-                "operatior and can not be applies to hallo and  world"
+                "operatior and can not be applies to hallo of kind STRING and  world of kind STRING"
             )
         );
     });
@@ -264,7 +266,9 @@ describe("Checker tests", () => {
     test("equals not possible on strings", () => {
         const source = 'iff "hi" eql "Hi" thn end';
         expect(checkerHelper(source)).toThrow(
-            new CompilerError("operatior eql can not be applies to hi and Hi")
+            new CompilerError(
+                "operatior eql can not be applies to hi of kind STRING and Hi of kind STRING"
+            )
         );
     });
 

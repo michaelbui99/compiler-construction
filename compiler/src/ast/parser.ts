@@ -1,5 +1,7 @@
+import { ExpressionTypeKind } from "../checker/expression-types";
 import { Scanner } from "../scanner/scanner";
 import { Token, TokenKind } from "../scanner/tokens";
+import { DEFAULT_INT_VALUE } from "../type-defaults";
 import { Block } from "./block";
 import {
     Declaration,
@@ -49,7 +51,10 @@ export class Parser {
         const block = this.parseBlock();
 
         if (this.currentTerminal.kind != TokenKind.EOF) {
-            this.reportError("incorrectly terminated program");
+            console.log(this.scanner.getRemainingSource());
+            this.reportError(
+                `Incorrectly terminated program. Expected EOF, but got ${this.currentTerminal.kind}`
+            );
         }
         return new Program(block);
     }
@@ -95,54 +100,18 @@ export class Parser {
             case TokenKind.IDENTIFIER:
                 return this.parseExpressionResult();
             case TokenKind.IFF:
-                this.accept(TokenKind.IFF);
-                const ifExpResult = this.parseExpressionResult();
-                this.accept(TokenKind.THEN);
-                const ifStatements = this.parseStatements();
-                let elseStatements = undefined;
-                // @ts-ignore
-                if (this.currentTerminal.kind === TokenKind.ELSE) {
-                    elseStatements = this.parseStatements();
-                }
-                this.accept(TokenKind.END);
-                return new IffStatement(
-                    ifExpResult,
-                    ifStatements,
-                    elseStatements
-                );
+                return this.parseIffStatment();
             case TokenKind.FOR:
-                this.accept(TokenKind.FOR);
-                const exppressionResult = this.parseExpressionResult();
-                this.accept(TokenKind.THEN);
-                const statements = this.parseStatements();
-                this.accept(TokenKind.END);
-                return new ForStatement(exppressionResult, statements);
+                return this.parseForStatement();
             case TokenKind.OUT:
-                this.accept(TokenKind.OUT);
-                const expResult = this.parseExpressionResult();
-                this.accept(TokenKind.PERCENT);
-                return new OutStatement(expResult);
+                return this.parseOutStatement();
             case TokenKind.ASSIGN:
-                this.accept(TokenKind.ASSIGN);
-                const assIdentifierToken = this.accept(TokenKind.IDENTIFIER);
-                const assIdentifier = new Identifier(
-                    assIdentifierToken.spelling
-                );
-                let indexes = [] as IndexType[];
-                // @ts-ignore
-                if (this.currentTerminal.kind === TokenKind.INDEX) {
-                    indexes = this.parseIndex();
-                }
-                const assExpression = this.parseExpressionResult();
-                this.accept(TokenKind.PERCENT);
-                return new AssStatement(assIdentifier, assExpression, indexes);
+                return this.parseAssStatement();
             case TokenKind.RETURN:
-                this.accept(TokenKind.RETURN);
-                const retExpression = this.parseExpressionResult();
-                this.accept(TokenKind.PERCENT);
-                return new RetStatement(retExpression);
+                return this.parseRetStatement();
             case TokenKind.BREAK:
                 this.accept(TokenKind.BREAK);
+                this.accept(TokenKind.PERCENT);
                 return new BreakStatement();
             default:
                 this.reportError(
@@ -189,7 +158,6 @@ export class Parser {
                 const identifier = new Identifier(identifierToken.spelling);
                 if (this.isExpressionToken()) {
                     const expressionList = this.parseExpressionList();
-                    // this.accept(TokenKind.PERCENT); // TODO: do we need this???
                     return new CallExpression(identifier, expressionList);
                     // @ts-ignore
                 } else if (this.currentTerminal.kind === TokenKind.INDEX) {
@@ -208,17 +176,54 @@ export class Parser {
 
     private parseIffStatment(): IffStatement {
         this.accept(TokenKind.IFF);
-        const expression = this.parseExpressionResult();
+        const ifExpResult = this.parseExpressionResult();
         this.accept(TokenKind.THEN);
-        const thnPart = this.parseStatements();
-        let elsPart = new Statements();
+        const ifStatements = this.parseStatements();
+        let elseStatements = undefined;
         // @ts-ignore
         if (this.currentTerminal.kind === TokenKind.ELSE) {
-            elsPart = this.parseStatements();
+            this.accept(TokenKind.ELSE);
+            elseStatements = this.parseStatements();
         }
         this.accept(TokenKind.END);
+        return new IffStatement(ifExpResult, ifStatements, elseStatements);
+    }
 
-        return new IffStatement(expression, thnPart, elsPart);
+    private parseForStatement(): ForStatement {
+        this.accept(TokenKind.FOR);
+        const exppressionResult = this.parseExpressionResult();
+        this.accept(TokenKind.THEN);
+        const statements = this.parseStatements();
+        this.accept(TokenKind.END);
+        return new ForStatement(exppressionResult, statements);
+    }
+
+    private parseOutStatement(): OutStatement {
+        this.accept(TokenKind.OUT);
+        const expResult = this.parseExpressionResult();
+        this.accept(TokenKind.PERCENT);
+        return new OutStatement(expResult);
+    }
+
+    private parseAssStatement(): AssStatement {
+        this.accept(TokenKind.ASSIGN);
+        const assIdentifierToken = this.accept(TokenKind.IDENTIFIER);
+        const assIdentifier = new Identifier(assIdentifierToken.spelling);
+        let indexes = [] as IndexType[];
+        // @ts-ignore
+        if (this.currentTerminal.kind === TokenKind.INDEX) {
+            indexes = this.parseIndex();
+        }
+        const assExpression = this.parseExpressionResult();
+        this.accept(TokenKind.PERCENT);
+        return new AssStatement(assIdentifier, assExpression, indexes);
+    }
+
+    private parseRetStatement(): RetStatement {
+        this.accept(TokenKind.RETURN);
+        const retExpression = this.parseExpressionResult();
+        this.accept(TokenKind.PERCENT);
+        return new RetStatement(retExpression);
     }
 
     private parseExpressionList(): ExpressionList {
@@ -356,7 +361,9 @@ export class Parser {
                     "Type was not declared for function parameter"
                 );
             }
-            funcArguments.push(new Identifier(token.spelling));
+
+            const identifier = new Identifier(token.spelling);
+            funcArguments.push(identifier);
             funcArgumentTypes.push(new Type(typeToken!.spelling));
         }
 

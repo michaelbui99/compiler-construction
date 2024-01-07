@@ -1,0 +1,6 @@
+fun calcSum a int b int thn
+    let c a add b %
+    out 100 %
+end
+
+out calcSum 1 2 %

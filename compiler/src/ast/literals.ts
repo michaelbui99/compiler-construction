@@ -7,7 +7,7 @@ export class StringLiteral extends Terminal {
         super(spelling);
     }
 
-    accept(visitor: IVisitor, arg: any): void {
+    accept(visitor: IVisitor, arg: any): any {
         return visitor.visitStringLiteral(this, arg);
     }
 }

@@ -32,6 +32,7 @@ import {
 import { Type } from "../ast/types";
 import { IVisitor } from "../ast/visitor";
 import { Token, TokenKind } from "../scanner/tokens";
+import { DEFAULT_INT_VALUE } from "../type-defaults";
 import { CompilerError } from "./exceptions";
 import { ExpressionType, ExpressionTypeKind } from "./expression-types";
 import { IdentificationTable } from "./identification-table";
@@ -62,8 +63,7 @@ export class Checker implements IVisitor {
     }
 
     visitExpressionResultStatement(node: ExpressionResult, args: any) {
-        node.accept(this, args);
-        return null;
+        return node.accept(this, args);
     }
 
     visitIffStatement(node: IffStatement, args: any) {
@@ -83,61 +83,77 @@ export class Checker implements IVisitor {
         return null;
     }
     visitOutStatement(node: OutStatement, args: any) {
-        node.expression.accept(this, args);
+        const type: ExpressionType = node.expression.accept(this, args);
+        node.expressionType = type;
 
         return null;
     }
     visitAssStatement(node: AssStatement, args: any) {
         const id = node.identifier.accept(this, args);
-        const declaration = this.idTable.retrieveDeclaration(id);
-        if (!declaration) {
+        const existingDeclaration = this.idTable.retrieveDeclaration(id);
+        if (!existingDeclaration) {
             throw new CompilerError(
                 `Cannot reassign ${id} as it has never been declared`
             );
         }
 
-        if (!(declaration instanceof VariableDeclaration)) {
+        if (!(existingDeclaration instanceof VariableDeclaration)) {
             throw new CompilerError(`Identifier ${id} is not a variable`);
         }
 
+        node.declaration = existingDeclaration;
         const assignToType = node.expression.accept(
             this,
             args
         ) as ExpressionType;
 
-        let variableType : ExpressionType | undefined = undefined;
-        if (declaration.expressionList){
-            const definedIndexes : ExpressionType = declaration.expressionList.expressions[0].accept(this,args);
+        let variableType: ExpressionType | undefined = undefined;
+        if (existingDeclaration.expressionList) {
+            const definedIndexes: ExpressionType =
+                existingDeclaration.expressionList.expressions[0].accept(
+                    this,
+                    args
+                );
             const askedIndexes = node.index?.length ?? 0;
             const finalIndexes = (definedIndexes.depth ?? 0) + 1 - askedIndexes;
             variableType = {
-                kind: (finalIndexes === 0) ? ExpressionTypeKind.INTEGER : ExpressionTypeKind.ARRAY,
+                kind:
+                    finalIndexes === 0
+                        ? ExpressionTypeKind.INTEGER
+                        : ExpressionTypeKind.ARRAY,
                 depth: finalIndexes,
             } as ExpressionType;
-        }else if (declaration.indexList){
-            const definedIndexes = declaration.indexList.length;
+        } else if (existingDeclaration.indexList) {
+            const definedIndexes = existingDeclaration.indexList.length;
             const askedIndexes = node.index?.length ?? 0;
             const finalIndexes = definedIndexes - askedIndexes;
             variableType = {
-                kind: (finalIndexes === 0) ? ExpressionTypeKind.INTEGER : ExpressionTypeKind.ARRAY,
+                kind:
+                    finalIndexes === 0
+                        ? ExpressionTypeKind.INTEGER
+                        : ExpressionTypeKind.ARRAY,
                 depth: finalIndexes,
             } as ExpressionType;
         } else {
-            variableType = declaration.expression?.accept(
-                this,
-                args
-            )
-            if (variableType === undefined) throw new CompilerError("internal error");
-            if (variableType.depth == undefined) {variableType.depth = 0;}
-            variableType.depth -= (node.index?.length ?? 0)
-        }
-        
-        if (assignToType.kind !== variableType?.kind){
-            throw new CompilerError(`Assignment of type ${assignToType.kind} not possible to type ${variableType?.kind}`);
+            variableType = existingDeclaration.expression?.accept(this, args);
+            if (variableType === undefined)
+                throw new CompilerError("internal error");
+            if (variableType.depth == undefined) {
+                variableType.depth = 0;
+            }
+            variableType.depth -= node.index?.length ?? 0;
         }
 
-        if ((assignToType.depth ?? 0) != (variableType?.depth ?? 0)){
-            throw new CompilerError("Depth of variable does not correspont to indexes")
+        if (assignToType.kind !== variableType?.kind) {
+            throw new CompilerError(
+                `Assignment of type ${assignToType.kind} not possible to type ${variableType?.kind}`
+            );
+        }
+
+        if ((assignToType.depth ?? 0) != (variableType?.depth ?? 0)) {
+            throw new CompilerError(
+                "Depth of variable does not correspont to indexes"
+            );
         }
 
         // TODO: Handle checking reassigning values for arrays
@@ -146,7 +162,8 @@ export class Checker implements IVisitor {
         return null;
     }
     visitRetStatement(node: RetStatement, args: any) {
-        node.expression.accept(this, args);
+        const type: ExpressionType = node.expression.accept(this, args);
+        return type;
     }
     visitBreakStatement(node: BreakStatement, args: any) {
         return null;
@@ -161,32 +178,91 @@ export class Checker implements IVisitor {
         const id = node.identifier.accept(this, args);
         this.idTable.declare(id, node);
         this.idTable.openScope();
+        if (!node.declarations) {
+            node.declarations = [];
+        }
         node.params.forEach((param, idx) => {
             // Params of function are treated as variables inside the function
             let type = node.paramTypes[idx];
+            let expresionType: ExpressionType | undefined = undefined;
             let expression;
             // We need this so the check can perform type checking in call expression
-            // TODO: Figure out how we do type checking. Maybe another visitor. Probably ask teacher.
             switch (type.spelling) {
                 case "int":
                     expression = new IntLiteralExpression(
-                        new IntegerLiteral("0")
+                        new IntegerLiteral(DEFAULT_INT_VALUE)
                     );
+                    expresionType = {
+                        depth: 0,
+                        kind: ExpressionTypeKind.INTEGER,
+                        spelling: "int",
+                    };
+                    const paramDeclaration = new VariableDeclaration(
+                        param,
+                        new IntLiteralExpression(
+                            new IntegerLiteral(DEFAULT_INT_VALUE)
+                        ),
+                        undefined,
+                        undefined,
+                        undefined,
+                        {
+                            depth: 0,
+                            kind: ExpressionTypeKind.INTEGER,
+                            spelling: "int",
+                        }
+                    );
+
+                    node.declarations!.push(paramDeclaration);
+                    this.idTable.declare(
+                        paramDeclaration.identifier.spelling,
+                        paramDeclaration
+                    );
+
                     break;
                 case "bol":
-                    expression = new BooleanLiteralExpression(new BooleanLiteral("tru"));
+                    expression = new BooleanLiteralExpression(
+                        new BooleanLiteral("tru")
+                    );
+                    expresionType = {
+                        depth: 0,
+                        kind: ExpressionTypeKind.BOOLEAN,
+                        spelling: "bol",
+                    };
                     break;
                 default:
                     break;
             }
-            this.idTable.declare(
-                param.spelling,
-                new VariableDeclaration(param)
-            );
         });
         node.params.forEach((param) => param.accept(this, args));
         node.paramTypes.forEach((paramType) => paramType.accept(this, args));
         node.statments.accept(this, args);
+
+        // Ensure that every return is of same type.
+        const retStatements: RetStatement[] = [];
+        for (let statement of node.statments.statements) {
+            if (statement instanceof RetStatement) {
+                retStatements.push(statement);
+            }
+        }
+
+        const returnTypes: ExpressionType[] =
+            (retStatements.map((statement) =>
+                statement.accept(this, null)
+            ) as unknown as ExpressionType[]) ?? [];
+
+        if (returnTypes.length > 0) {
+            const expectedType = returnTypes[0];
+            const allReturnsAreOfSameType = returnTypes.every(
+                (t) => t.kind === expectedType.kind
+            );
+            if (!allReturnsAreOfSameType) {
+                throw new CompilerError(
+                    "Function must return same type in every branch"
+                );
+            }
+
+            node.returnType = expectedType;
+        }
         this.idTable.closeScope();
 
         return null;
@@ -194,25 +270,36 @@ export class Checker implements IVisitor {
 
     visitVariableDeclaration(node: VariableDeclaration, args: any) {
         const id = node.identifier.accept(this, args);
+        const type: ExpressionType = node.expression?.accept(this, args);
+        if (type) {
+            node.type = type;
+        }
         this.idTable.declare(id, node);
-        node.expression?.accept(this, args);
-        if (node.expressionList !== undefined){
-            let firstType : ExpressionType = node.expressionList.expressions[0].accept(this,args);
-            node.expressionList.expressions.forEach(expression => {
-                let type : ExpressionType = expression.accept(this,args);
-                if (firstType.kind !== type.kind){
-                    throw new CompilerError("all expressions of array has to have the same type");
+        // Elements in ExpressionList indicates that it is an array declaration.
+        if (node.expressionList !== undefined) {
+            let firstType: ExpressionType =
+                node.expressionList.expressions[0].accept(this, args);
+            node.expressionList.expressions.forEach((expression) => {
+                let type: ExpressionType = expression.accept(this, args);
+                if (firstType.kind !== type.kind) {
+                    throw new CompilerError(
+                        "all expressions of array has to have the same type"
+                    );
                 }
-                if (type.kind !== ExpressionTypeKind.ARRAY &&
-                    type.kind !== ExpressionTypeKind.INTEGER){
-                        throw new CompilerError("Arrays can have elements of type array or integer only.")
-                    }
-            })
+                if (
+                    // type.kind !== ExpressionTypeKind.ARRAY && Only allow single level integer arrays.
+                    type.kind !== ExpressionTypeKind.INTEGER
+                ) {
+                    throw new CompilerError(
+                        "Arrays can have elements of type array or integer only."
+                    );
+                }
+            });
             node.expressionList?.accept(this, args);
-        } else if (node.indexList !== undefined){
+        } else if (node.indexList !== undefined) {
             return null;
         }
-        
+
         return null;
     }
     visitIntegerLiteralExpression(node: IntLiteralExpression, args: any) {
@@ -275,8 +362,10 @@ export class Checker implements IVisitor {
             }
         } else if (token.isCompareOperator()) {
             if (
-                operand1.kind === ExpressionTypeKind.INTEGER &&
-                operand2.kind === ExpressionTypeKind.INTEGER
+                (operand1.kind === ExpressionTypeKind.INTEGER &&
+                    operand2.kind === ExpressionTypeKind.INTEGER) ||
+                (operand1.kind === ExpressionTypeKind.BOOLEAN &&
+                    operand2.kind === ExpressionTypeKind.BOOLEAN)
             ) {
                 return {
                     kind: ExpressionTypeKind.BOOLEAN,
@@ -284,8 +373,9 @@ export class Checker implements IVisitor {
                 } as ExpressionType;
             }
         }
+
         throw new CompilerError(
-            `operatior ${token.spelling} can not be applies to ${operand1.spelling} and ${operand2.spelling}`
+            `operatior ${token.spelling} can not be applies to ${operand1.spelling} of kind ${operand1.kind} and ${operand2.spelling} of kind ${operand2.kind}`
         );
     }
     visitVariableExpression(node: VariableExpression, args: any) {
@@ -301,14 +391,15 @@ export class Checker implements IVisitor {
             throw new CompilerError(`Identifier ${id} is not a variable`);
         }
 
-        if (existingDeclaration.expressionList !== null) {
+        node.declaration = existingDeclaration;
+        if (existingDeclaration.expressionList !== undefined) {
             return {
                 kind: ExpressionTypeKind.ARRAY,
                 spelling: node.identifier.spelling,
             } as ExpressionType;
         } else {
             return {
-                kind: existingDeclaration.expression?.accept(this, args),
+                kind: existingDeclaration.expression?.accept(this, args).kind,
                 spelling: node.identifier.spelling,
             } as ExpressionType;
         }
@@ -327,8 +418,7 @@ export class Checker implements IVisitor {
         if (!(existingDeclaration instanceof FunctionDeclaration)) {
             throw new CompilerError(`Identifier ${id} is not a function`);
         }
-
-        // TODO: We need to declare the function params in scope here
+        node.declaration = existingDeclaration;
         const callArgumentCount = node.args.expressions.length;
         const definedArgumentCount = existingDeclaration.params.length;
 
@@ -380,8 +470,10 @@ export class Checker implements IVisitor {
             throw new CompilerError(`No array with id ${id} has been declared`);
         }
 
-        if (declaration.expressionList === undefined &&
-            declaration.indexList === undefined) {
+        if (
+            declaration.expressionList === undefined &&
+            declaration.indexList === undefined
+        ) {
             throw new CompilerError(`Identifier ${id} is not an array`);
         }
 
@@ -440,24 +532,25 @@ export class Checker implements IVisitor {
         return new Token(TokenKind.OPERATOR, node.spelling);
     }
     visitType(node: Type, args: any) {
-        switch (node.spelling){
+        switch (node.spelling) {
             case "bol":
                 return {
-                    kind: ExpressionTypeKind.BOOLEAN
+                    kind: ExpressionTypeKind.BOOLEAN,
                 } as ExpressionType;
-            case "int": 
+            case "int":
                 return {
-                    kind: ExpressionTypeKind.INTEGER
+                    kind: ExpressionTypeKind.INTEGER,
                 } as ExpressionType;
             case "str":
                 return {
-                    kind: ExpressionTypeKind.STRING
+                    kind: ExpressionTypeKind.STRING,
                 } as ExpressionType;
             case "arr":
                 return {
-                    kind: ExpressionTypeKind.ARRAY
+                    kind: ExpressionTypeKind.ARRAY,
                 } as ExpressionType;
-            default: throw new CompilerError("unknown type");
+            default:
+                throw new CompilerError("unknown type");
         }
     }
 }

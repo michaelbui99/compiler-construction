@@ -1,0 +1,7 @@
+iff 2 grt 3 thn
+    out 1 %
+els
+    out 2 %
+end
+
+out 3 %
